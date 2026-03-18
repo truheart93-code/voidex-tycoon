@@ -247,7 +247,7 @@ export function getPrestigeMultiplier(stars) {
 
 export function createInitialState() {
   return {
-    credits: 10,
+    credits: 25,
     totalEarned: 0,
     lifetimeEarned: 0,
     generators: {},
