@@ -10,7 +10,7 @@ const STATIC_NEWS = [
   "🌠 Rare supernova event detected in the Andromeda quadrant",
   "🧬 Quantum researchers claim breakthrough in matter synthesis technology",
   "⚔️ Border skirmish near Kepler-452b resolved peacefully after negotiations",
-  "🏆 Annual Stellar Tycoon Rankings released — top empires revealed!",
+  "🏆 Annual Voidex Tycoon Rankings released — top empires revealed!",
   "🌋 Volcanic moon of Jupiter showing signs of rare crystalline formations",
   "📡 Deep space signal decoded — message appears to be an advertisement",
   "🔭 New exoplanet discovered with potential for rare mineral deposits",
@@ -62,7 +62,7 @@ export default function NewsTicker({ state }) {
   }, [allNews.length]);
 
   return (
-    <div className="flex items-center gap-2 px-3 py-1.5 bg-card/60 backdrop-blur-sm border-b border-border/30 overflow-hidden">
+    <div className="flex items-start gap-2 px-3 py-2 bg-card/60 backdrop-blur-sm border-b border-border/30">
       <div className="flex items-center gap-1.5 flex-shrink-0">
         <Radio className="w-3 h-3 text-primary animate-pulse" />
         <span className="font-display text-[9px] font-bold tracking-widest text-primary">GALACTIC NEWS</span>
@@ -77,7 +77,7 @@ export default function NewsTicker({ state }) {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -30 }}
               transition={{ duration: 0.35 }}
-              className="font-body text-[11px] text-muted-foreground whitespace-nowrap truncate"
+              className="font-body text-[11px] text-muted-foreground leading-relaxed"
             >
               {allNews[index]}
             </motion.p>

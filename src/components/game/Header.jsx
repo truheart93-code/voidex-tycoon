@@ -23,7 +23,7 @@ export default function Header({ credits, creditsPerSec, prestigeStars, isMusicO
           <div className="flex items-center gap-2">
             <span className="text-lg">🚀</span>
             <h1 className="font-display text-sm font-bold tracking-wider text-primary">
-              STELLAR EMPIRE
+              VOIDEX TYCOON
             </h1>
           </div>
           <div className="flex items-center gap-2">
