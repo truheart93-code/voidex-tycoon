@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { formatNumber, getPrestigeMultiplier } from '@/lib/gameData';
-import { Volume2, VolumeX, Star } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Volume2, VolumeX, Star, Palette } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-export default function Header({ credits, creditsPerSec, prestigeStars, isMusicOn, onToggleMusic }) {
+export default function Header({ credits, creditsPerSec, prestigeStars, isMusicOn, onToggleMusic, onOpenThemes }) {
   const multiplier = getPrestigeMultiplier(prestigeStars);
   const prevCredits = useRef(credits);
   const [bump, setBump] = useState(false);
@@ -34,6 +34,12 @@ export default function Header({ credits, creditsPerSec, prestigeStars, isMusicO
                 <span className="text-xs font-body text-muted-foreground">x{multiplier.toFixed(1)}</span>
               </div>
             )}
+            <button
+              onClick={onOpenThemes}
+              className="p-1.5 rounded-lg bg-muted/50 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Palette className="w-4 h-4" />
+            </button>
             <button
               onClick={onToggleMusic}
               className="p-1.5 rounded-lg bg-muted/50 text-muted-foreground hover:text-foreground transition-colors"

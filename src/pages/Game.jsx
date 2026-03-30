@@ -20,6 +20,8 @@ import DailyQuests from '@/components/game/DailyQuests';
 import LeaderboardPanel from '@/components/game/LeaderboardPanel';
 import BuffDisplay from '@/components/game/BuffDisplay';
 import { BUFFS } from '@/lib/questData';
+import ThemeSelector from '@/components/game/ThemeSelector';
+import { THEMES, loadTheme, saveTheme, applyTheme } from '@/lib/themes';
 
 // Generator accent colors for particles
 const GEN_COLORS = {
@@ -57,6 +59,18 @@ export default function Game() {
   const [musicOn, setMusicOn] = useState(false);
   const [showOffline, setShowOffline] = useState(!!state.offlineEarnings);
   const [offlineAmount] = useState(state.offlineEarnings || 0);
+  const [showThemes, setShowThemes] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState(() => loadTheme());
+
+  // Apply theme on mount and changes
+  useEffect(() => { applyTheme(currentTheme); }, [currentTheme]);
+
+  const handleSelectTheme = (themeId) => {
+    setCurrentTheme(themeId);
+    saveTheme(themeId);
+    applyTheme(themeId);
+    setShowThemes(false);
+  };
 
   // Buff multipliers
   const buffIncomeMultiplier = useMemo(() => {
@@ -124,6 +138,7 @@ export default function Game() {
         prestigeStars={state.prestigeStars}
         isMusicOn={musicOn}
         onToggleMusic={handleToggleMusic}
+        onOpenThemes={() => setShowThemes(true)}
       />
 
       <NewsTicker state={state} />
@@ -185,6 +200,14 @@ export default function Game() {
         <OfflineEarningsModal
           earnings={offlineAmount}
           onDismiss={() => setShowOffline(false)}
+        />
+      )}
+
+      {showThemes && (
+        <ThemeSelector
+          currentTheme={currentTheme}
+          onSelect={handleSelectTheme}
+          onClose={() => setShowThemes(false)}
         />
       )}
     </div>

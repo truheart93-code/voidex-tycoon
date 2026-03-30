@@ -74,8 +74,10 @@ function GeneratorCard({
       animate={{ opacity: 1, y: 0 }}
       className={`relative overflow-hidden rounded-xl border transition-all duration-200
         ${isComplete
-          ? 'border-accent/60 bg-accent/5 shadow-lg shadow-accent/20'
-          : 'border-border/50 bg-card/80'
+          ? 'border-accent/70 bg-gradient-to-r from-accent/8 to-transparent shadow-lg shadow-accent/20'
+          : isRunning
+            ? 'border-primary/30 bg-card/90'
+            : 'border-border/40 bg-card/70'
         }`}
     >
       {/* Floating earn text */}
@@ -112,7 +114,8 @@ function GeneratorCard({
             className={`relative flex-shrink-0 w-14 h-14 rounded-xl flex items-center justify-center text-2xl
               bg-gradient-to-br ${generator.color} shadow-lg ${generator.glowColor}
               ${count === 0 ? 'opacity-35 grayscale' : ''}
-              ${isComplete ? 'ring-2 ring-accent ring-offset-1 ring-offset-background' : ''}
+              ${isComplete ? 'ring-2 ring-accent ring-offset-2 ring-offset-background shadow-accent/50' : ''}
+              ${isRunning && !isComplete ? 'ring-1 ring-primary/40 ring-offset-1 ring-offset-background' : ''}
               active:scale-90 transition-all duration-150`}
           >
             <span className={isComplete ? 'animate-bounce' : ''}>{generator.emoji}</span>
