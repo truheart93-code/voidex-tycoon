@@ -88,6 +88,7 @@ export default function useGameState() {
         loaded.totalEarned = (loaded.totalEarned || 0) + offlineEarnings;
         loaded.lifetimeEarned = (loaded.lifetimeEarned || 0) + offlineEarnings;
         loaded.offlineEarnings = offlineEarnings;
+        loaded.offlineSeconds = Math.floor(elapsed / 1000);
       }
     }
     loaded.lastSaveTime = now;

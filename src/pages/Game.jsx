@@ -59,6 +59,7 @@ export default function Game() {
   const [musicOn, setMusicOn] = useState(false);
   const [showOffline, setShowOffline] = useState(!!state.offlineEarnings);
   const [offlineAmount] = useState(state.offlineEarnings || 0);
+  const [offlineSeconds] = useState(state.offlineSeconds || 0);
   const [showThemes, setShowThemes] = useState(false);
   const [currentTheme, setCurrentTheme] = useState(() => loadTheme());
 
@@ -199,6 +200,7 @@ export default function Game() {
       {showOffline && (
         <OfflineEarningsModal
           earnings={offlineAmount}
+          offlineSeconds={offlineSeconds}
           onDismiss={() => setShowOffline(false)}
         />
       )}

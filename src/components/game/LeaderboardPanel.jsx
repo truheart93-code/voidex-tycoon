@@ -2,7 +2,18 @@ import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { formatNumber } from '@/lib/gameData';
 import { motion } from 'framer-motion';
-import { Trophy, Upload, Star, Loader2 } from 'lucide-react';
+import { Trophy, Upload, Star, Loader2, AlertCircle } from 'lucide-react';
+
+const BLOCKED_WORDS = [
+  'fuck','shit','ass','bitch','cunt','dick','pussy','cock','nigger','nigga',
+  'faggot','fag','retard','whore','slut','bastard','damn','hell','piss','crap',
+  'twat','wanker','bollocks','asshole','arsehole','motherfucker','idiot','moron',
+];
+
+function isNameClean(name) {
+  const lower = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+  return !BLOCKED_WORDS.some(w => lower.includes(w));
+}
 
 export default function LeaderboardPanel({ state }) {
   const [entries, setEntries] = useState([]);
@@ -23,8 +34,15 @@ export default function LeaderboardPanel({ state }) {
     setLoading(false);
   }
 
+  const [nameError, setNameError] = useState('');
+
   async function submitScore() {
     if (!playerName.trim()) return;
+    if (!isNameClean(playerName)) {
+      setNameError('Please choose an appropriate commander name.');
+      return;
+    }
+    setNameError('');
     setSubmitting(true);
     localStorage.setItem('stellar_player_name', playerName.trim());
 
@@ -74,22 +92,30 @@ export default function LeaderboardPanel({ state }) {
 
         {/* Submit */}
         {editingName ? (
-          <div className="flex gap-2">
-            <input
-              value={playerName}
-              onChange={e => setPlayerName(e.target.value)}
-              placeholder="Enter commander name..."
-              maxLength={20}
-              onKeyDown={e => e.key === 'Enter' && submitScore()}
-              className="flex-1 px-3 py-2 rounded-xl bg-muted border border-border text-xs font-body text-foreground placeholder-muted-foreground outline-none focus:border-primary transition-colors"
-            />
-            <button
-              onClick={submitScore}
-              disabled={submitting || !playerName.trim()}
-              className="px-3 py-2 rounded-xl bg-primary text-primary-foreground font-body text-xs font-bold disabled:opacity-50 active:scale-95 transition-all"
-            >
-              {submitting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
-            </button>
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <input
+                value={playerName}
+                onChange={e => { setPlayerName(e.target.value); setNameError(''); }}
+                placeholder="Enter commander name..."
+                maxLength={20}
+                onKeyDown={e => e.key === 'Enter' && submitScore()}
+                className={`flex-1 px-3 py-2 rounded-xl bg-muted border text-xs font-body text-foreground placeholder-muted-foreground outline-none focus:border-primary transition-colors ${nameError ? 'border-destructive' : 'border-border'}`}
+              />
+              <button
+                onClick={submitScore}
+                disabled={submitting || !playerName.trim()}
+                className="px-3 py-2 rounded-xl bg-primary text-primary-foreground font-body text-xs font-bold disabled:opacity-50 active:scale-95 transition-all"
+              >
+                {submitting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
+              </button>
+            </div>
+            {nameError && (
+              <div className="flex items-center gap-1.5 text-destructive">
+                <AlertCircle className="w-3 h-3 flex-shrink-0" />
+                <span className="font-body text-[10px]">{nameError}</span>
+              </div>
+            )}
           </div>
         ) : (
           <div className="flex items-center justify-between">
