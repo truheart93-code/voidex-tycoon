@@ -2,6 +2,7 @@ import { formatNumber, getPrestigeStars, getPrestigeMultiplier, PRESTIGE_UPGRADE
 import { motion } from 'framer-motion';
 import { Star, RotateCcw, Zap, Lock, Check } from 'lucide-react';
 import { useState } from 'react';
+import PrestigeSkillTree from './PrestigeSkillTree';
 
 function PrestigeUpgradeCard({ upg, owned, canAfford, onBuy, locked }) {
   return (
@@ -152,33 +153,27 @@ export default function PrestigePanel({ state, onPrestige, onBuyPrestigeUpgrade 
       )}
 
       {activeSection === 'upgrades' && (
-        <div className="space-y-2">
+        <div>
           <div className="flex items-center justify-between mb-3 px-1">
-            <p className="font-body text-xs text-muted-foreground">Spend prestige stars on permanent bonuses</p>
+            <div>
+              <p className="font-body text-xs text-muted-foreground">Tap a node to unlock — hover for details</p>
+            </div>
             <div className="flex items-center gap-1 bg-secondary/20 rounded-full px-2 py-1">
               <Star className="w-3 h-3 text-secondary fill-secondary" />
-              <span className="font-display text-xs font-bold text-secondary">{availableStars}</span>
+              <span className="font-display text-xs font-bold text-secondary">{availableStars} stars</span>
             </div>
           </div>
-          {PRESTIGE_UPGRADES.map(upg => {
-            const owned = prestigeUpgrades.includes(upg.id);
-            const locked = upg.requires && !prestigeUpgrades.includes(upg.requires);
-            const canAfford = availableStars >= upg.cost && !locked;
-            return (
-              <PrestigeUpgradeCard
-                key={upg.id}
-                upg={upg}
-                owned={owned}
-                canAfford={canAfford && !owned}
-                locked={locked && !owned}
-                onBuy={onBuyPrestigeUpgrade}
-              />
-            );
-          })}
-          {currentStars === 0 && (
-            <p className="font-body text-sm text-muted-foreground text-center py-6">
-              Prestige to earn stars and unlock this shop!
-            </p>
+          {currentStars === 0 ? (
+            <div className="text-center py-8">
+              <div className="text-4xl mb-3 opacity-40">🌟</div>
+              <p className="font-body text-sm text-muted-foreground">Prestige to earn stars and unlock skills!</p>
+            </div>
+          ) : (
+            <PrestigeSkillTree
+              prestigeUpgrades={prestigeUpgrades}
+              availableStars={availableStars}
+              onBuy={onBuyPrestigeUpgrade}
+            />
           )}
         </div>
       )}
