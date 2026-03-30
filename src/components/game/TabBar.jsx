@@ -14,7 +14,8 @@ const TABS = [
 export default function TabBar({ activeTab, onTabChange, questAlert }) {
   return (
     <div className="sticky bottom-0 z-30 bg-background/90 backdrop-blur-xl border-t border-border/50 safe-bottom">
-      <div className="flex items-center justify-around py-1 overflow-x-auto">
+      <div className="flex items-center py-1 overflow-x-auto scrollbar-none" style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
+        <div className="flex items-center min-w-max px-1 mx-auto gap-0.5">
         {TABS.map(tab => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -37,6 +38,7 @@ export default function TabBar({ activeTab, onTabChange, questAlert }) {
             </button>
           );
         })}
+        </div>
       </div>
     </div>
   );
