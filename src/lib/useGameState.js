@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
-  GENERATORS, MANAGERS, UPGRADES, ACHIEVEMENTS,
+  GENERATORS, MANAGERS, UPGRADES, ACHIEVEMENTS, PRESTIGE_UPGRADES,
   getCost, getRevenue, getTime, getPrestigeStars, getPrestigeMultiplier,
+  getOfflineEfficiency, getStartCredits,
   createInitialState
 } from './gameData';
 import { playBuySound, playCollectSound, playUpgradeSound, playAchievementSound, playPrestigeSound } from './audioEngine';
@@ -42,8 +43,8 @@ export default function useGameState() {
     const now = Date.now();
     const elapsed = now - (loaded.lastSaveTime || now);
     if (elapsed > 5000) { // 5 seconds minimum
-      let offlineEarnings = 0;
-      const prestigeMult = getPrestigeMultiplier(loaded.prestigeStars || 0);
+    let offlineEarnings = 0;
+    const prestigeMult = getPrestigeMultiplier(loaded.prestigeStars || 0, loaded.prestigeUpgrades || []);
       let globalMult = 1;
       (loaded.upgrades || []).forEach(uid => {
         const upg = UPGRADES.find(u => u.id === uid);
@@ -54,14 +55,15 @@ export default function useGameState() {
         const genState = loaded.generators[gen.id];
         if (genState && genState.count > 0 && loaded.managers?.includes(gen.id)) {
           const revenue = getRevenue(gen, genState, prestigeMult, globalMult);
-          const time = getTime(gen, genState);
+          const time = getTime(gen, genState, loaded.prestigeUpgrades || []);
           const cycles = elapsed / time;
           offlineEarnings += revenue * cycles;
         }
       });
 
-      // Cap offline at 50% efficiency
-      offlineEarnings *= 0.5;
+      // Apply offline efficiency (default 50%, improved by prestige upgrades)
+      const offlineEff = getOfflineEfficiency(loaded.prestigeUpgrades || []);
+      offlineEarnings *= offlineEff;
       if (offlineEarnings > 0) {
         loaded.credits = (loaded.credits || 0) + offlineEarnings;
         loaded.totalEarned = (loaded.totalEarned || 0) + offlineEarnings;
@@ -98,7 +100,7 @@ export default function useGameState() {
         let newTotalEarned = prev.totalEarned;
         let newLifetime = prev.lifetimeEarned;
         const newGenerators = { ...prev.generators };
-        const prestigeMult = getPrestigeMultiplier(prev.prestigeStars);
+        const prestigeMult = getPrestigeMultiplier(prev.prestigeStars, prev.prestigeUpgrades || []);
         let globalMult = 1;
         prev.upgrades.forEach(uid => {
           const upg = UPGRADES.find(u => u.id === uid);
@@ -112,7 +114,7 @@ export default function useGameState() {
           if (!genState || genState.count === 0) return;
 
           const isManaged = prev.managers.includes(gen.id);
-          const time = getTime(gen, genState);
+          const time = getTime(gen, genState, prev.prestigeUpgrades || []);
 
           if (!genState.progress) genState.progress = 0;
           if (!genState.running && isManaged) genState.running = true;
@@ -198,7 +200,6 @@ export default function useGameState() {
       if (!gen || !genState || genState.count === 0) return prev;
 
       if (!genState.running) {
-        // Start production
         return {
           ...prev,
           generators: {
@@ -208,9 +209,9 @@ export default function useGameState() {
         };
       }
 
-      const time = getTime(gen, genState);
+      const time = getTime(gen, genState, prev.prestigeUpgrades || []);
       if (genState.progress >= time) {
-        const prestigeMult = getPrestigeMultiplier(prev.prestigeStars);
+        const prestigeMult = getPrestigeMultiplier(prev.prestigeStars, prev.prestigeUpgrades || []);
         let globalMult = 1;
         prev.upgrades.forEach(uid => {
           const upg = UPGRADES.find(u => u.id === uid);
@@ -289,14 +290,37 @@ export default function useGameState() {
       if (stars <= prev.prestigeStars) return prev;
 
       playPrestigeSound();
-      const fresh = createInitialState();
+      const prestigeUpgrades = prev.prestigeUpgrades || [];
+      const fresh = createInitialState(prestigeUpgrades);
       return {
         ...fresh,
         prestigeStars: stars,
         totalPrestiges: (prev.totalPrestiges || 0) + 1,
         lifetimeEarned: prev.lifetimeEarned,
         achievements: prev.achievements,
+        prestigeUpgrades,
         lastSaveTime: Date.now(),
+      };
+    });
+  }, []);
+
+  const buyPrestigeUpgrade = useCallback((upgradeId) => {
+    setState(prev => {
+      const upg = PRESTIGE_UPGRADES.find(u => u.id === upgradeId);
+      if (!upg) return prev;
+      const prestigeUpgrades = prev.prestigeUpgrades || [];
+      if (prestigeUpgrades.includes(upgradeId)) return prev;
+      if (upg.requires && !prestigeUpgrades.includes(upg.requires)) return prev;
+
+      // Calculate available stars
+      const spentStars = PRESTIGE_UPGRADES.filter(u => prestigeUpgrades.includes(u.id)).reduce((s, u) => s + u.cost, 0);
+      const availableStars = prev.prestigeStars - spentStars;
+      if (availableStars < upg.cost) return prev;
+
+      playUpgradeSound();
+      return {
+        ...prev,
+        prestigeUpgrades: [...prestigeUpgrades, upgradeId],
       };
     });
   }, []);
@@ -317,6 +341,7 @@ export default function useGameState() {
     buyManager,
     buyUpgrade,
     prestige,
+    buyPrestigeUpgrade,
     setBuyAmount,
     resetGame,
     newAchievements,

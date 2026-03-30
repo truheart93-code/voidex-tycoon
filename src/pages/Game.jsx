@@ -39,6 +39,7 @@ export default function Game() {
     buyManager,
     buyUpgrade,
     prestige,
+    buyPrestigeUpgrade,
     setBuyAmount,
     resetGame,
     newAchievements,
@@ -137,7 +138,7 @@ export default function Game() {
         )}
 
         {activeTab === 'prestige' && (
-          <PrestigePanel state={state} onPrestige={prestige} />
+          <PrestigePanel state={state} onPrestige={prestige} onBuyPrestigeUpgrade={buyPrestigeUpgrade} />
         )}
 
         {activeTab === 'achievements' && (
