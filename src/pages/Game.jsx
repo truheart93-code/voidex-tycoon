@@ -24,6 +24,8 @@ import ThemeSelector from '@/components/game/ThemeSelector';
 import AnalyticsPanel from '@/components/game/AnalyticsPanel';
 import { THEMES, loadTheme, saveTheme, applyTheme } from '@/lib/themes';
 import IntroModal from '@/components/game/IntroModal';
+import DailyRewardModal from '@/components/game/DailyRewardModal';
+import { checkDailyReward } from '@/lib/dailyReward';
 import GalaxyEvents from '@/components/game/GalaxyEvents';
 
 // Generator accent colors for particles
@@ -67,6 +69,16 @@ export default function Game() {
   const [offlineSeconds] = useState(state.offlineSeconds || 0);
   const [showThemes, setShowThemes] = useState(false);
   const [currentTheme, setCurrentTheme] = useState(() => loadTheme());
+
+  // Daily reward
+  const [dailyCheck] = useState(() => checkDailyReward());
+  const [showDailyReward, setShowDailyReward] = useState(() => checkDailyReward().available);
+  const [dailyData, setDailyData] = useState(() => checkDailyReward().data);
+
+  const handleDailyRewardClaim = useCallback((credits, updatedData) => {
+    applyGalaxyCredits(credits);
+    setDailyData(updatedData);
+  }, [applyGalaxyCredits]);
 
   // Apply theme on mount and changes
   useEffect(() => { applyTheme(currentTheme); }, [currentTheme]);
@@ -223,6 +235,13 @@ export default function Game() {
       )}
 
       <IntroModal state={state} />
+      {showDailyReward && (
+        <DailyRewardModal
+          dailyData={dailyData}
+          onClaim={handleDailyRewardClaim}
+          onClose={() => setShowDailyReward(false)}
+        />
+      )}
       <GalaxyEvents state={state} onAddCredits={applyGalaxyCredits} onAddBuff={triggerBuff} />
     </div>
   );
