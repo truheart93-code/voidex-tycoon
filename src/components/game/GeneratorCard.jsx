@@ -65,6 +65,7 @@ function GeneratorCard({
       setFloats(prev => [...prev.slice(-3), { id: Date.now(), amount: revenue }]);
       setTimeout(() => setFloats(prev => prev.slice(1)), 1000);
     }
+    // Pass a synthetic event with the card's position if no event provided
     onCollect(generator.id, e);
   }, [count, isComplete, revenue, onCollect, generator.id]);
 
@@ -72,7 +73,8 @@ function GeneratorCard({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`relative overflow-hidden rounded-xl border transition-all duration-200
+      onClick={handleCollect}
+      className={`relative overflow-hidden rounded-xl border transition-all duration-200 cursor-pointer
         ${isComplete
           ? 'border-accent/70 bg-gradient-to-r from-accent/8 to-transparent shadow-lg shadow-accent/20'
           : isRunning
@@ -109,8 +111,7 @@ function GeneratorCard({
       <div className="relative z-10 p-3">
         <div className="flex items-center gap-3">
           {/* Emoji button */}
-          <button
-            onClick={handleCollect}
+          <div
             className={`relative flex-shrink-0 w-14 h-14 rounded-xl flex items-center justify-center text-2xl
               bg-gradient-to-br ${generator.color} shadow-lg ${generator.glowColor}
               ${count === 0 ? 'opacity-35 grayscale' : ''}
@@ -124,7 +125,7 @@ function GeneratorCard({
                 TAP
               </span>
             )}
-          </button>
+          </div>
 
           {/* Info */}
           <div className="flex-1 min-w-0">
@@ -203,7 +204,7 @@ function GeneratorCard({
 
           {/* Buy button */}
           <button
-            onClick={() => onBuy(generator.id)}
+            onClick={e => { e.stopPropagation(); onBuy(generator.id); }}
             disabled={!canAfford}
             className={`flex-shrink-0 px-3 py-2.5 rounded-xl font-body text-xs font-bold transition-all
               ${canAfford

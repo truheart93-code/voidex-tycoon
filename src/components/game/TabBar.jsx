@@ -12,8 +12,8 @@ const TABS = [
 
 export default function TabBar({ activeTab, onTabChange, questAlert }) {
   return (
-    <div className="sticky bottom-0 z-30 bg-background/90 backdrop-blur-xl border-t border-border/50">
-      <div className="flex items-center justify-around py-1 pb-safe overflow-x-auto">
+    <div className="sticky bottom-0 z-30 bg-background/90 backdrop-blur-xl border-t border-border/50 safe-bottom">
+      <div className="flex items-center justify-around py-1 overflow-x-auto">
         {TABS.map(tab => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;

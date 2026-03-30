@@ -18,23 +18,27 @@ function isNameClean(name) {
 export default function LeaderboardPanel({ state }) {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [playerName, setPlayerName] = useState(localStorage.getItem('stellar_player_name') || '');
-  const [editingName, setEditingName] = useState(!playerName);
+  const [editingName, setEditingName] = useState(!localStorage.getItem('stellar_player_name'));
+  const [nameError, setNameError] = useState('');
   const [myEntryId, setMyEntryId] = useState(localStorage.getItem('stellar_lb_id') || null);
 
-  useEffect(() => {
-    loadLeaderboard();
-  }, []);
+  useEffect(() => { loadLeaderboard(); }, []);
 
   async function loadLeaderboard() {
     setLoading(true);
-    const data = await base44.entities.LeaderboardEntry.list('-lifetime_earned', 50);
-    setEntries(data);
-    setLoading(false);
+    setError(null);
+    try {
+      const data = await base44.entities.LeaderboardEntry.list('-lifetime_earned', 50);
+      setEntries(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError('Could not load leaderboard. Check your connection and try again.');
+    } finally {
+      setLoading(false);
+    }
   }
-
-  const [nameError, setNameError] = useState('');
 
   async function submitScore() {
     if (!playerName.trim()) return;
@@ -54,17 +58,21 @@ export default function LeaderboardPanel({ state }) {
       total_generators: Object.values(state.generators).reduce((s, g) => s + (g?.count || 0), 0),
     };
 
-    if (myEntryId) {
-      await base44.entities.LeaderboardEntry.update(myEntryId, payload);
-    } else {
-      const created = await base44.entities.LeaderboardEntry.create(payload);
-      setMyEntryId(created.id);
-      localStorage.setItem('stellar_lb_id', created.id);
+    try {
+      if (myEntryId) {
+        await base44.entities.LeaderboardEntry.update(myEntryId, payload);
+      } else {
+        const created = await base44.entities.LeaderboardEntry.create(payload);
+        setMyEntryId(created.id);
+        localStorage.setItem('stellar_lb_id', created.id);
+      }
+      setEditingName(false);
+      await loadLeaderboard();
+    } catch (err) {
+      setNameError('Failed to submit. Please try again.');
+    } finally {
+      setSubmitting(false);
     }
-
-    setSubmitting(false);
-    setEditingName(false);
-    await loadLeaderboard();
   }
 
   const myRank = myEntryId ? entries.findIndex(e => e.id === myEntryId) + 1 : null;
@@ -84,13 +92,12 @@ export default function LeaderboardPanel({ state }) {
           <Trophy className="w-5 h-5 text-accent" />
           <h3 className="font-display text-sm font-bold tracking-wide text-foreground">Galactic Leaderboard</h3>
         </div>
-        {myRank && (
+        {myRank > 0 && (
           <p className="font-body text-xs text-muted-foreground mb-3">
             Your rank: <span className="text-primary font-bold">#{myRank}</span> of {entries.length} empires
           </p>
         )}
 
-        {/* Submit */}
         {editingName ? (
           <div className="space-y-2">
             <div className="flex gap-2">
@@ -123,7 +130,7 @@ export default function LeaderboardPanel({ state }) {
               Commander: <span className="text-foreground font-semibold">{playerName}</span>
             </span>
             <button
-              onClick={() => { submitScore(); }}
+              onClick={submitScore}
               disabled={submitting}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary/20 text-primary font-body text-xs font-bold active:scale-95 transition-all"
             >
@@ -139,6 +146,12 @@ export default function LeaderboardPanel({ state }) {
         <div className="flex justify-center py-8">
           <Loader2 className="w-6 h-6 animate-spin text-primary" />
         </div>
+      ) : error ? (
+        <div className="text-center py-8">
+          <AlertCircle className="w-8 h-8 text-destructive mx-auto mb-2" />
+          <p className="font-body text-sm text-destructive">{error}</p>
+          <button onClick={loadLeaderboard} className="mt-3 px-4 py-2 rounded-xl bg-primary/20 text-primary font-body text-xs font-bold">Retry</button>
+        </div>
       ) : entries.length === 0 ? (
         <div className="text-center py-8">
           <p className="font-body text-sm text-muted-foreground">No entries yet. Be the first!</p>
@@ -147,6 +160,7 @@ export default function LeaderboardPanel({ state }) {
         <div className="space-y-1.5">
           {entries.map((entry, i) => {
             const isMe = entry.id === myEntryId;
+            const rank = rankEmoji(i);
             return (
               <motion.div
                 key={entry.id}
@@ -159,9 +173,9 @@ export default function LeaderboardPanel({ state }) {
                     : i < 3 ? 'border-accent/20 bg-accent/5' : 'border-border/30 bg-card/60'}`}
               >
                 <div className="w-8 text-center font-display text-sm font-black">
-                  {typeof rankEmoji(i) === 'string' && rankEmoji(i).startsWith('#')
-                    ? <span className="text-muted-foreground text-xs">{rankEmoji(i)}</span>
-                    : <span>{rankEmoji(i)}</span>}
+                  {rank.startsWith('#')
+                    ? <span className="text-muted-foreground text-xs">{rank}</span>
+                    : <span>{rank}</span>}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
@@ -171,11 +185,11 @@ export default function LeaderboardPanel({ state }) {
                     {isMe && <span className="text-[9px] bg-primary/20 text-primary rounded-full px-1.5 py-0.5 font-body">YOU</span>}
                   </div>
                   <span className="font-body text-[10px] text-muted-foreground">
-                    💎{formatNumber(entry.lifetime_earned)} lifetime
+                    💎{formatNumber(entry.lifetime_earned || 0)} lifetime
                   </span>
                 </div>
                 <div className="text-right">
-                  {entry.prestige_stars > 0 && (
+                  {(entry.prestige_stars || 0) > 0 && (
                     <div className="flex items-center gap-0.5 justify-end">
                       <Star className="w-3 h-3 text-secondary fill-secondary" />
                       <span className="font-display text-[10px] text-secondary font-bold">{entry.prestige_stars}</span>

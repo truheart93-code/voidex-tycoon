@@ -20,7 +20,7 @@
     --secondary: 270 60% 55%;
     --secondary-foreground: 210 40% 98%;
     --muted: 230 15% 18%;
-    --muted-foreground: 210 15% 55%;
+    --muted-foreground: 210 20% 68%;
     --accent: 45 90% 55%;
     --accent-foreground: 230 25% 7%;
     --destructive: 0 75% 55%;
@@ -56,7 +56,7 @@
     --secondary: 270 60% 55%;
     --secondary-foreground: 210 40% 98%;
     --muted: 230 15% 18%;
-    --muted-foreground: 210 15% 55%;
+    --muted-foreground: 210 20% 68%;
     --accent: 45 90% 55%;
     --accent-foreground: 230 25% 7%;
     --destructive: 0 75% 55%;
@@ -88,6 +88,10 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Safe area support for phones */
+.safe-top { padding-top: max(12px, env(safe-area-inset-top)); }
+.safe-bottom { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
 
 /* Custom scrollbar for space theme */
 ::-webkit-scrollbar {

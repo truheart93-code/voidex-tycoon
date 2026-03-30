@@ -22,6 +22,7 @@ import BuffDisplay from '@/components/game/BuffDisplay';
 import { BUFFS } from '@/lib/questData';
 import ThemeSelector from '@/components/game/ThemeSelector';
 import { THEMES, loadTheme, saveTheme, applyTheme } from '@/lib/themes';
+import IntroModal from '@/components/game/IntroModal';
 
 // Generator accent colors for particles
 const GEN_COLORS = {
@@ -212,6 +213,8 @@ export default function Game() {
           onClose={() => setShowThemes(false)}
         />
       )}
+
+      <IntroModal />
     </div>
   );
 }
