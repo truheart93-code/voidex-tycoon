@@ -1,0 +1,28 @@
+{
+  "name": "LeaderboardEntry",
+  "type": "object",
+  "properties": {
+    "player_name": {
+      "type": "string"
+    },
+    "credits": {
+      "type": "number"
+    },
+    "prestige_stars": {
+      "type": "number"
+    },
+    "total_generators": {
+      "type": "number"
+    },
+    "achievements": {
+      "type": "number"
+    },
+    "player_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "player_name",
+    "credits"
+  ]
+}
