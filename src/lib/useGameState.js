@@ -412,6 +412,19 @@ export default function useGameState() {
     setState(prev => ({ ...prev, buyAmount: amount }));
   }, []);
 
+  const applyGalaxyCredits = useCallback((amount) => {
+    setState(prev => ({
+      ...prev,
+      credits: prev.credits + amount,
+      totalEarned: prev.totalEarned + amount,
+      lifetimeEarned: prev.lifetimeEarned + amount,
+    }));
+  }, []);
+
+  const triggerBuff = useCallback((buff) => {
+    setActiveBuffs(prev => [...prev, buff]);
+  }, []);
+
   const resetGame = useCallback(() => {
     localStorage.removeItem(SAVE_KEY);
     setState(createInitialState());
@@ -446,5 +459,7 @@ export default function useGameState() {
     quests,
     activeBuffs,
     claimQuest,
+    applyGalaxyCredits,
+    triggerBuff,
   };
 }

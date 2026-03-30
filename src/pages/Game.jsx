@@ -24,6 +24,7 @@ import ThemeSelector from '@/components/game/ThemeSelector';
 import AnalyticsPanel from '@/components/game/AnalyticsPanel';
 import { THEMES, loadTheme, saveTheme, applyTheme } from '@/lib/themes';
 import IntroModal from '@/components/game/IntroModal';
+import GalaxyEvents from '@/components/game/GalaxyEvents';
 
 // Generator accent colors for particles
 const GEN_COLORS = {
@@ -55,6 +56,8 @@ export default function Game() {
     quests,
     activeBuffs,
     claimQuest,
+    applyGalaxyCredits,
+    triggerBuff,
   } = useGameState();
 
   const [activeTab, setActiveTab] = useState('generators');
@@ -219,7 +222,8 @@ export default function Game() {
         />
       )}
 
-      <IntroModal />
+      <IntroModal state={state} />
+      <GalaxyEvents state={state} onAddCredits={applyGalaxyCredits} onAddBuff={triggerBuff} />
     </div>
   );
 }
