@@ -2,13 +2,32 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   GENERATORS, MANAGERS, UPGRADES, ACHIEVEMENTS, PRESTIGE_UPGRADES,
   getCost, getRevenue, getTime, getPrestigeStars, getPrestigeMultiplier,
-  getOfflineEfficiency, getStartCredits,
+  getOfflineEfficiency, getStartCredits, getClickMultiplier,
   createInitialState
 } from './gameData';
+import { generateDailyQuests, getDailySeedKey, BUFFS } from './questData';
 import { playBuySound, playCollectSound, playUpgradeSound, playAchievementSound, playPrestigeSound } from './audioEngine';
 
 const SAVE_KEY = 'stellar_empire_save';
 const TICK_RATE = 50; // ms
+const QUEST_KEY = 'stellar_quest_save';
+
+function loadQuests(prestigeStars) {
+  try {
+    const saved = localStorage.getItem(QUEST_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed.seed === getDailySeedKey()) return parsed.quests;
+    }
+  } catch(e) {}
+  return generateDailyQuests(prestigeStars);
+}
+
+function saveQuests(quests) {
+  try {
+    localStorage.setItem(QUEST_KEY, JSON.stringify({ seed: getDailySeedKey(), quests }));
+  } catch(e) {}
+}
 
 function loadGame() {
   try {
@@ -78,6 +97,20 @@ export default function useGameState() {
   const stateRef = useRef(state);
   stateRef.current = state;
   const [newAchievements, setNewAchievements] = useState([]);
+  const [quests, setQuests] = useState(() => loadQuests(state.prestigeStars));
+  const [activeBuffs, setActiveBuffs] = useState([]);
+  const tapCountRef = useRef(0);
+
+  // Expire buffs
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveBuffs(prev => prev.filter(b => b.expiresAt > Date.now()));
+    }, 500);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Save quests whenever they change
+  useEffect(() => { saveQuests(quests); }, [quests]);
 
   // Auto-save every 10 seconds
   useEffect(() => {
@@ -106,6 +139,9 @@ export default function useGameState() {
           const upg = UPGRADES.find(u => u.id === uid);
           if (upg && upg.generatorId === 'all') globalMult *= upg.multiplier;
         });
+        // Apply active buffs
+        const now = Date.now();
+        // NOTE: activeBuffs is read via closure from outer scope
 
         let changed = false;
 
@@ -179,6 +215,15 @@ export default function useGameState() {
       if (prev.credits < cost) return prev;
 
       playBuySound();
+      const newCount = genState.count + buyAmt;
+      // Update buy_generators quest
+      setQuests(qprev => qprev.map(q =>
+        q.type === 'buy_generators' && !q.claimed
+          ? { ...q, progress: (q.progress || 0) + buyAmt }
+          : q.type === 'reach_milestone' && !q.claimed && newCount >= q.target
+            ? { ...q, progress: q.target }
+            : q
+      ));
       return {
         ...prev,
         credits: prev.credits - cost,
@@ -186,7 +231,7 @@ export default function useGameState() {
           ...prev.generators,
           [generatorId]: {
             ...genState,
-            count: genState.count + buyAmt,
+            count: newCount,
           }
         }
       };
@@ -194,6 +239,14 @@ export default function useGameState() {
   }, []);
 
   const collectGenerator = useCallback((generatorId) => {
+    tapCountRef.current += 1;
+    // Update tap quest progress
+    setQuests(prev => prev.map(q =>
+      q.type === 'tap_generators' && !q.claimed
+        ? { ...q, progress: (q.progress || 0) + 1 }
+        : q
+    ));
+
     setState(prev => {
       const gen = GENERATORS.find(g => g.id === generatorId);
       const genState = prev.generators[generatorId];
@@ -217,7 +270,8 @@ export default function useGameState() {
           const upg = UPGRADES.find(u => u.id === uid);
           if (upg && upg.generatorId === 'all') globalMult *= upg.multiplier;
         });
-        const revenue = getRevenue(gen, genState, prestigeMult, globalMult);
+        const clickMult = getClickMultiplier(prev.prestigeUpgrades || []);
+        const revenue = getRevenue(gen, genState, prestigeMult, globalMult) * clickMult;
         playCollectSound();
         return {
           ...prev,
@@ -255,6 +309,11 @@ export default function useGameState() {
       const upg = UPGRADES.find(u => u.id === upgradeId);
       if (!upg || prev.upgrades.includes(upgradeId)) return prev;
       if (prev.credits < upg.cost) return prev;
+      setQuests(qprev => qprev.map(q =>
+        q.type === 'buy_upgrades' && !q.claimed
+          ? { ...q, progress: (q.progress || 0) + 1 }
+          : q
+      ));
 
       // Check required count
       if (upg.generatorId !== 'all') {
@@ -304,6 +363,29 @@ export default function useGameState() {
     });
   }, []);
 
+  const claimQuest = useCallback((questId) => {
+    setQuests(prev => prev.map(q => {
+      if (q.id !== questId || q.claimed || q.progress < q.target) return q;
+      // Activate buff or give credits
+      const buffDef = BUFFS.find(b => b.id === q.reward);
+      if (buffDef) {
+        setActiveBuffs(bprev => [...bprev, {
+          id: buffDef.id,
+          instanceId: Date.now(),
+          expiresAt: Date.now() + buffDef.duration,
+        }]);
+      } else if (q.reward === 'credits_bonus') {
+        setState(sprev => ({
+          ...sprev,
+          credits: sprev.credits + Math.floor(sprev.totalEarned * 0.01 + 1000),
+          totalEarned: sprev.totalEarned + Math.floor(sprev.totalEarned * 0.01 + 1000),
+          lifetimeEarned: sprev.lifetimeEarned + Math.floor(sprev.totalEarned * 0.01 + 1000),
+        }));
+      }
+      return { ...q, claimed: true };
+    }));
+  }, []);
+
   const buyPrestigeUpgrade = useCallback((upgradeId) => {
     setState(prev => {
       const upg = PRESTIGE_UPGRADES.find(u => u.id === upgradeId);
@@ -334,6 +416,20 @@ export default function useGameState() {
     setState(createInitialState());
   }, []);
 
+  // Update earn_credits quest from state changes
+  const lastEarned = useRef(state.totalEarned);
+  useEffect(() => {
+    const diff = state.totalEarned - lastEarned.current;
+    if (diff > 0) {
+      setQuests(prev => prev.map(q =>
+        q.type === 'earn_credits' && !q.claimed
+          ? { ...q, progress: Math.min((q.progress || 0) + diff, q.target) }
+          : q
+      ));
+    }
+    lastEarned.current = state.totalEarned;
+  }, [state.totalEarned]);
+
   return {
     state,
     buyGenerator,
@@ -346,5 +442,8 @@ export default function useGameState() {
     resetGame,
     newAchievements,
     dismissAchievement,
+    quests,
+    activeBuffs,
+    claimQuest,
   };
 }

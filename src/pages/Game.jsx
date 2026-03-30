@@ -16,6 +16,10 @@ import OfflineEarningsModal from '@/components/game/OfflineEarningsModal';
 import NewsTicker from '@/components/game/NewsTicker';
 import StatsBar from '@/components/game/StatsBar';
 import ParticleCanvas, { triggerParticles } from '@/components/game/ParticleCanvas';
+import DailyQuests from '@/components/game/DailyQuests';
+import LeaderboardPanel from '@/components/game/LeaderboardPanel';
+import BuffDisplay from '@/components/game/BuffDisplay';
+import { BUFFS } from '@/lib/questData';
 
 // Generator accent colors for particles
 const GEN_COLORS = {
@@ -44,12 +48,23 @@ export default function Game() {
     resetGame,
     newAchievements,
     dismissAchievement,
+    quests,
+    activeBuffs,
+    claimQuest,
   } = useGameState();
 
   const [activeTab, setActiveTab] = useState('generators');
   const [musicOn, setMusicOn] = useState(false);
   const [showOffline, setShowOffline] = useState(!!state.offlineEarnings);
   const [offlineAmount] = useState(state.offlineEarnings || 0);
+
+  // Buff multipliers
+  const buffIncomeMultiplier = useMemo(() => {
+    return activeBuffs.reduce((m, b) => {
+      const def = BUFFS.find(bd => bd.id === b.id);
+      return def?.incomeMultiplier ? m * def.incomeMultiplier : m;
+    }, 1);
+  }, [activeBuffs]);
 
   // Compute total passive income per second
   const creditsPerSec = useMemo(() => {
@@ -113,6 +128,7 @@ export default function Game() {
 
       <NewsTicker state={state} />
       <StatsBar state={state} creditsPerSec={creditsPerSec} />
+      <BuffDisplay activeBuffs={activeBuffs} />
 
       <div className="flex-1 overflow-y-auto relative z-10 pb-2">
         {activeTab === 'generators' && (
@@ -141,12 +157,24 @@ export default function Game() {
           <PrestigePanel state={state} onPrestige={prestige} onBuyPrestigeUpgrade={buyPrestigeUpgrade} />
         )}
 
+        {activeTab === 'quests' && (
+          <DailyQuests quests={quests} onClaim={claimQuest} activeBuffs={activeBuffs} />
+        )}
+
+        {activeTab === 'leaderboard' && (
+          <LeaderboardPanel state={state} />
+        )}
+
         {activeTab === 'achievements' && (
           <AchievementsPanel state={state} />
         )}
       </div>
 
-      <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
+      <TabBar
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        questAlert={quests?.some(q => !q.claimed && q.progress >= q.target)}
+      />
 
       <AchievementToast
         achievement={newAchievements[0]}

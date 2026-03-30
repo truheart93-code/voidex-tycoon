@@ -1,0 +1,12 @@
+{
+  "name": "LeaderboardEntry",
+  "type": "object",
+  "properties": {
+    "player_name": { "type": "string" },
+    "lifetime_earned": { "type": "number" },
+    "prestige_stars": { "type": "number" },
+    "total_prestiges": { "type": "number" },
+    "total_generators": { "type": "number" }
+  },
+  "required": ["player_name", "lifetime_earned"]
+}
