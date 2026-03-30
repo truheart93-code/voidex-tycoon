@@ -146,7 +146,7 @@ export default function Game() {
   }, [newAchievements, dismissAchievement]);
 
   return (
-    <div className="game-container min-h-screen bg-background flex flex-col relative">
+    <div className="game-container bg-background flex flex-col relative" style={{ height: '100dvh', overflow: 'hidden' }}>
       <StarField />
       <ParticleCanvas />
 
@@ -163,7 +163,7 @@ export default function Game() {
       <StatsBar state={state} creditsPerSec={creditsPerSec} />
       <BuffDisplay activeBuffs={activeBuffs} />
 
-      <div className="flex-1 overflow-y-auto relative z-10 pb-24">
+      <div className="flex-1 overflow-y-auto relative z-10 pb-2" style={{ overscrollBehavior: 'contain' }}>
         {activeTab === 'generators' && (
           <>
             <BuyAmountSelector
