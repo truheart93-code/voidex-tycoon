@@ -1,7 +1,7 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import useGameState from '@/lib/useGameState';
 import { GENERATORS, UPGRADES, getRevenue, getTime, getPrestigeMultiplier } from '@/lib/gameData';
-import { startMusic, stopMusic, toggleMusic, isMusicOn } from '@/lib/audioEngine';
+import { toggleMusic } from '@/lib/audioEngine';
 import StarField from '@/components/game/StarField';
 import Header from '@/components/game/Header';
 import TabBar from '@/components/game/TabBar';
@@ -13,6 +13,23 @@ import PrestigePanel from '@/components/game/PrestigePanel';
 import AchievementsPanel from '@/components/game/AchievementsPanel';
 import AchievementToast from '@/components/game/AchievementToast';
 import OfflineEarningsModal from '@/components/game/OfflineEarningsModal';
+import NewsTicker from '@/components/game/NewsTicker';
+import StatsBar from '@/components/game/StatsBar';
+import ParticleCanvas, { triggerParticles } from '@/components/game/ParticleCanvas';
+
+// Generator accent colors for particles
+const GEN_COLORS = {
+  asteroid_mine: '#a8a29e',
+  solar_farm: '#f59e0b',
+  ice_harvester: '#22d3ee',
+  gas_refinery: '#a78bfa',
+  colony_hub: '#34d399',
+  warp_gate: '#c084fc',
+  dyson_sphere: '#f87171',
+  quantum_forge: '#38bdf8',
+  dimension_rift: '#f472b6',
+  cosmic_engine: '#fbbf24',
+};
 
 export default function Game() {
   const {
@@ -41,7 +58,6 @@ export default function Game() {
       const upg = UPGRADES.find(u => u.id === uid);
       if (upg && upg.generatorId === 'all') globalMult *= upg.multiplier;
     });
-
     return GENERATORS.reduce((sum, gen) => {
       const gs = state.generators[gen.id];
       if (!gs || gs.count === 0 || !state.managers.includes(gen.id)) return sum;
@@ -56,6 +72,23 @@ export default function Game() {
     setMusicOn(isOn);
   };
 
+  // Wrap collectGenerator to fire particles
+  const handleCollect = useCallback((genId, event) => {
+    const gs = state.generators[genId];
+    const gen = GENERATORS.find(g => g.id === genId);
+    if (gs && gen && gs.running && gs.progress >= getTime(gen, gs)) {
+      // Get tap position from the event target or fallback to center
+      const el = event?.currentTarget;
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        triggerParticles(cx, cy, GEN_COLORS[genId] || '#22d3ee', 22);
+      }
+    }
+    collectGenerator(genId);
+  }, [state.generators, collectGenerator]);
+
   // Auto-dismiss achievement toast after 3 seconds
   useEffect(() => {
     if (newAchievements.length > 0) {
@@ -67,7 +100,8 @@ export default function Game() {
   return (
     <div className="game-container min-h-screen bg-background flex flex-col relative">
       <StarField />
-      
+      <ParticleCanvas />
+
       <Header
         credits={state.credits}
         creditsPerSec={creditsPerSec}
@@ -75,6 +109,9 @@ export default function Game() {
         isMusicOn={musicOn}
         onToggleMusic={handleToggleMusic}
       />
+
+      <NewsTicker state={state} />
+      <StatsBar state={state} creditsPerSec={creditsPerSec} />
 
       <div className="flex-1 overflow-y-auto relative z-10 pb-2">
         {activeTab === 'generators' && (
@@ -86,7 +123,7 @@ export default function Game() {
             <GeneratorList
               state={state}
               onBuy={buyGenerator}
-              onCollect={collectGenerator}
+              onCollect={handleCollect}
             />
           </>
         )}

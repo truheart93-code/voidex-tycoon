@@ -59,13 +59,13 @@ function GeneratorCard({
   const nextMilestone = MILESTONES.find(m => count < m.count);
   const revenuePerSec = count > 0 ? (revenue / time) * 1000 : 0;
 
-  const handleCollect = useCallback(() => {
+  const handleCollect = useCallback((e) => {
     if (count === 0) return;
     if (isComplete) {
       setFloats(prev => [...prev.slice(-3), { id: Date.now(), amount: revenue }]);
       setTimeout(() => setFloats(prev => prev.slice(1)), 1000);
     }
-    onCollect(generator.id);
+    onCollect(generator.id, e);
   }, [count, isComplete, revenue, onCollect, generator.id]);
 
   return (
