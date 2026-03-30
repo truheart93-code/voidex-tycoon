@@ -19,6 +19,51 @@ const STATIC_NEWS = [
   "🚀 Fuel prices spike after wormhole disruption near the trade routes",
   "☄️ Rogue comet narrowly misses populated space station — locals shaken",
   "🌊 Ice harvester union demands better working conditions in Europa orbit",
+  "🪐 Senate debates whether Saturn's rings count as territory under galactic law",
+  "🧪 Scientists develop new element — found only in the void between galaxies",
+  "💀 Pirates intercept shipment of quantum processors near Titan relay station",
+  "🦠 Alien microbes discovered on Enceladus — classified immediately by authorities",
+  "🌀 Wormhole collapses stranding 400 cargo ships — insurance companies scramble",
+  "🛰️ Communications satellite hacked to broadcast ancient Earth soap operas",
+  "🏗️ Mega-structure construction halted after workers find space whale migration path",
+  "⚗️ Black market sells 'bottled singularity' — experts urge extreme caution",
+  "🌙 Lunar real estate prices surge as billionaires flee Earth's tax reforms",
+  "🔋 Solar energy consortium announces Dyson Sphere pilot program for next decade",
+  "👾 Extraterrestrial diplomats demand a seat on the Galactic Stock Exchange",
+  "🎭 Famous space opera cancelled mid-season after star literally goes nova",
+  "🕳️ Void energy leak detected — scientists say 'probably fine, don't worry about it'",
+  "🌿 Terraformed Mars colony stages protest: demands to be called 'New Earth 2'",
+  "🧲 Magnetic anomaly near asteroid belt bending compass readings across sector 9",
+  "📦 Lost cargo container from 2187 finally recovered — contents still unexplained",
+  "🏥 Medical bay aboard ISS Prometheus reports 47 cases of 'space vertigo'",
+  "💊 Galactic FDA bans new supplement claiming to extend life by 300 years",
+  "🎵 DJ NOVA-3000 breaks intergalactic listening record with 8-hour space rave set",
+  "🦅 Rare space eagle spotted nesting in decommissioned warship near Pluto",
+  "🔑 Encryption key to legendary treasure lost to solar flare — adventurers mourn",
+  "🌐 Universal translator glitch causes diplomatic incident — apologies issued",
+  "🎲 Gambling laws updated: all bets on black hole survival now legally enforceable",
+  "🏊 Zero-gravity water park opens on Ganymede — instant 6-month waitlist",
+  "🌪️ Plasma storm sweeps through the Kuiper Belt, disrupting seventeen mining ops",
+  "🔭 Hubble-X spots galaxy shaped exactly like a credit symbol — considered omen",
+  "🪂 Escape pod lands in wrong star system — pilot unfazed, calls it 'adventure'",
+  "🤯 Philosopher claims entire universe is a simulation — simulator billed for overtime",
+  "💡 Inventor pitches gravity-powered espresso machine to Galactic Shark Tank",
+  "🧊 Record cold snap on Triton — minus 300°C, locals describe it as 'crisp'",
+  "🛡️ Galactic Defense Fleet commissions 10,000 new drones — stock soars 400%",
+  "🎯 Precision asteroid redirect saves colony — crew celebrates with freeze-dried cake",
+  "🪩 Disco-themed space station opens near Neptune — surprisingly popular",
+  "🔩 Supply chain disruption blamed on sentient forklift union demands",
+  "🌏 Earth declared 'Heritage Site' — tourism now only legal industry remaining",
+  "🧠 Neural implant upgrade causes 30% of users to briefly believe they're asteroids",
+  "🐙 Alien species discovered communicating entirely through rhythmic tentacle taps",
+  "⚡ Power grid failure on Titan blamed on overloaded quantum gaming servers",
+  "🎪 Traveling circus arrives at Vega Station — acrobats reportedly defy physics",
+  "🌈 Unexplained aurora phenomenon spotted simultaneously on 6 planets — no comment from authorities",
+  "📰 Galactic Tribune wins award for 'Most Dramatic Headline About Nothing'",
+  "🦾 Cybernetic enhancement clinic accused of installing cup holders without consent",
+  "🚂 Hyperrail project connecting three star systems declared over-budget by 900%",
+  "🎖️ Veteran asteroid miner retires after 40 years — cites 'too many rocks'",
+  "🤝 Two rival megacorps merge — resulting entity immediately sues itself",
 ];
 
 function getDynamicNews(state) {
@@ -39,13 +84,13 @@ export default function NewsTicker({ state }) {
   const allNews = useMemo(() => {
     const dynamic = getDynamicNews(state);
     const pool = [...dynamic, ...STATIC_NEWS];
-    // shuffle
+    // Fisher-Yates shuffle with seeded start for variety
     for (let i = pool.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [pool[i], pool[j]] = [pool[j], pool[i]];
     }
     return pool;
-  }, [state.credits > 0 && Math.floor(Math.log10(Math.max(state.credits, 1))), state.managers.length, state.prestigeStars]);
+  }, [Math.floor(Math.log10(Math.max(state.credits || 1, 1))), state.managers.length, state.prestigeStars, state.totalPrestiges]);
 
   const [index, setIndex] = useState(0);
   const [visible, setVisible] = useState(true);

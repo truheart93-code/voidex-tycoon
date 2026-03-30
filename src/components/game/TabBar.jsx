@@ -1,4 +1,4 @@
-import { Pickaxe, Users, ArrowUp, Star, Trophy, CalendarDays, Medal } from 'lucide-react';
+import { Pickaxe, Users, ArrowUp, Star, Trophy, CalendarDays, Medal, BarChart2 } from 'lucide-react';
 
 const TABS = [
   { id: 'generators', label: 'Empire', icon: Pickaxe },
@@ -6,6 +6,7 @@ const TABS = [
   { id: 'upgrades', label: 'Tech', icon: ArrowUp },
   { id: 'prestige', label: 'Rebirth', icon: Star },
   { id: 'quests', label: 'Quests', icon: CalendarDays },
+  { id: 'analytics', label: 'Charts', icon: BarChart2 },
   { id: 'leaderboard', label: 'Ranks', icon: Medal },
   { id: 'achievements', label: 'Awards', icon: Trophy },
 ];

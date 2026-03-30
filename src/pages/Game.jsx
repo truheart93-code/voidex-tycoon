@@ -21,6 +21,7 @@ import LeaderboardPanel from '@/components/game/LeaderboardPanel';
 import BuffDisplay from '@/components/game/BuffDisplay';
 import { BUFFS } from '@/lib/questData';
 import ThemeSelector from '@/components/game/ThemeSelector';
+import AnalyticsPanel from '@/components/game/AnalyticsPanel';
 import { THEMES, loadTheme, saveTheme, applyTheme } from '@/lib/themes';
 import IntroModal from '@/components/game/IntroModal';
 
@@ -176,6 +177,10 @@ export default function Game() {
 
         {activeTab === 'quests' && (
           <DailyQuests quests={quests} onClaim={claimQuest} activeBuffs={activeBuffs} />
+        )}
+
+        {activeTab === 'analytics' && (
+          <AnalyticsPanel state={state} creditsPerSec={creditsPerSec} />
         )}
 
         {activeTab === 'leaderboard' && (
