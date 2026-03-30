@@ -1,13 +1,25 @@
+import { useState, useEffect, useRef } from 'react';
 import { formatNumber, getPrestigeMultiplier } from '@/lib/gameData';
 import { Volume2, VolumeX, Star } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-export default function Header({ credits, prestigeStars, isMusicOn, onToggleMusic }) {
+export default function Header({ credits, creditsPerSec, prestigeStars, isMusicOn, onToggleMusic }) {
   const multiplier = getPrestigeMultiplier(prestigeStars);
-  
+  const prevCredits = useRef(credits);
+  const [bump, setBump] = useState(false);
+
+  useEffect(() => {
+    if (credits > prevCredits.current) {
+      setBump(true);
+      setTimeout(() => setBump(false), 200);
+    }
+    prevCredits.current = credits;
+  }, [credits]);
+
   return (
-    <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border/50">
+    <div className="sticky top-0 z-30 bg-background/85 backdrop-blur-xl border-b border-border/50">
       <div className="px-4 py-3">
-        <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <span className="text-lg">🚀</span>
             <h1 className="font-display text-sm font-bold tracking-wider text-primary">
@@ -30,11 +42,27 @@ export default function Header({ credits, prestigeStars, isMusicOn, onToggleMusi
             </button>
           </div>
         </div>
-        <div className="flex items-center justify-center gap-2">
-          <span className="text-2xl">💎</span>
-          <span className="font-display text-2xl font-black tracking-wide text-foreground">
-            {formatNumber(credits)}
-          </span>
+
+        {/* Credits display */}
+        <div className="text-center">
+          <motion.div
+            animate={bump ? { scale: 1.08 } : { scale: 1 }}
+            transition={{ duration: 0.15 }}
+            className="flex items-center justify-center gap-2"
+          >
+            <span className="text-2xl">💎</span>
+            <span className="font-display text-2xl font-black tracking-wide text-foreground">
+              {formatNumber(credits)}
+            </span>
+          </motion.div>
+          {creditsPerSec > 0 && (
+            <div className="flex items-center justify-center gap-1 mt-0.5">
+              <span className="font-body text-xs text-primary/80">
+                +{formatNumber(creditsPerSec)}/sec
+              </span>
+              <span className="font-body text-[10px] text-muted-foreground">auto</span>
+            </div>
+          )}
         </div>
       </div>
     </div>

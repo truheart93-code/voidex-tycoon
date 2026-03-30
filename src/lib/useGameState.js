@@ -14,7 +14,12 @@ function loadGame() {
     const saved = localStorage.getItem(SAVE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
-      return { ...createInitialState(), ...parsed };
+      const merged = { ...createInitialState(), ...parsed };
+      // Ensure player always has at least starting credits if they've never earned anything
+      if (merged.credits === 0 && merged.totalEarned === 0 && Object.keys(merged.generators).length === 0) {
+        merged.credits = 25;
+      }
+      return merged;
     }
   } catch (e) {
     console.warn('Failed to load save');

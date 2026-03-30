@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import useGameState from '@/lib/useGameState';
+import { GENERATORS, UPGRADES, getRevenue, getTime, getPrestigeMultiplier } from '@/lib/gameData';
 import { startMusic, stopMusic, toggleMusic, isMusicOn } from '@/lib/audioEngine';
 import StarField from '@/components/game/StarField';
 import Header from '@/components/game/Header';
@@ -32,6 +33,24 @@ export default function Game() {
   const [showOffline, setShowOffline] = useState(!!state.offlineEarnings);
   const [offlineAmount] = useState(state.offlineEarnings || 0);
 
+  // Compute total passive income per second
+  const creditsPerSec = useMemo(() => {
+    const prestigeMult = getPrestigeMultiplier(state.prestigeStars);
+    let globalMult = 1;
+    state.upgrades.forEach(uid => {
+      const upg = UPGRADES.find(u => u.id === uid);
+      if (upg && upg.generatorId === 'all') globalMult *= upg.multiplier;
+    });
+
+    return GENERATORS.reduce((sum, gen) => {
+      const gs = state.generators[gen.id];
+      if (!gs || gs.count === 0 || !state.managers.includes(gen.id)) return sum;
+      const rev = getRevenue(gen, gs, prestigeMult, globalMult);
+      const time = getTime(gen, gs);
+      return sum + (rev / time) * 1000;
+    }, 0);
+  }, [state.generators, state.managers, state.upgrades, state.prestigeStars]);
+
   const handleToggleMusic = () => {
     const isOn = toggleMusic();
     setMusicOn(isOn);
@@ -51,6 +70,7 @@ export default function Game() {
       
       <Header
         credits={state.credits}
+        creditsPerSec={creditsPerSec}
         prestigeStars={state.prestigeStars}
         isMusicOn={musicOn}
         onToggleMusic={handleToggleMusic}
@@ -90,13 +110,11 @@ export default function Game() {
 
       <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {/* Achievement Toast */}
       <AchievementToast
         achievement={newAchievements[0]}
         onDismiss={dismissAchievement}
       />
 
-      {/* Offline Earnings Modal */}
       {showOffline && (
         <OfflineEarningsModal
           earnings={offlineAmount}
