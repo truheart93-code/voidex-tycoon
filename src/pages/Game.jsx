@@ -163,7 +163,7 @@ export default function Game() {
       <StatsBar state={state} creditsPerSec={creditsPerSec} />
       <BuffDisplay activeBuffs={activeBuffs} />
 
-      <div className="flex-1 overflow-y-auto relative z-10 pb-2">
+      <div className="flex-1 overflow-y-auto relative z-10 pb-24">
         {activeTab === 'generators' && (
           <>
             <BuyAmountSelector
