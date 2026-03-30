@@ -29,3 +29,14 @@ dist-ssr
 
 .env
 .vite
+
+# Capacitor
+android/.gradle
+android/build
+android/app/build
+android/.idea
+android/local.properties
+android/*.iml
+android/key.properties
+android/app/*.keystore
+ios/

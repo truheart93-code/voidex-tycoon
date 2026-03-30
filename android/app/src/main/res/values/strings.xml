@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">VoidEx Tycoon</string>
+    <string name="title_activity_main">VoidEx Tycoon</string>
+    <string name="package_name">com.truheart.voidextycoon</string>
+    <string name="custom_url_scheme">com.truheart.voidextycoon</string>
+</resources>
