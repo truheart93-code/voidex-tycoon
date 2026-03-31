@@ -5,11 +5,11 @@ const PRIMARY_TABS = [
   { id: 'generators', label: 'Empire', icon: Pickaxe },
   { id: 'upgrades', label: 'Tech', icon: ArrowUp },
   { id: 'prestige', label: 'Rebirth', icon: Star },
-  { id: 'quests', label: 'Quests', icon: CalendarDays },
+  { id: 'managers', label: 'Crew', icon: Users },
 ];
 
 const MORE_TABS = [
-  { id: 'managers', label: 'Crew', icon: Users },
+  { id: 'quests', label: 'Quests', icon: CalendarDays },
   { id: 'rifts', label: 'Rifts', icon: Zap, minPrestiges: 50 },
   { id: 'analytics', label: 'Charts', icon: BarChart2 },
   { id: 'leaderboard', label: 'Ranks', icon: Medal },
