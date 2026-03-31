@@ -391,40 +391,40 @@ export const UPGRADES = [
 export const PRESTIGE_UPGRADES = [
   // Starting resources
   { id: 'pup_start_cash', name: 'Head Start', description: 'Begin each run with 50,000 credits', cost: 1, emoji: '💰', type: 'start_credits', value: 50000 },
-  { id: 'pup_start_cash2', name: 'Silver Spoon', description: 'Begin each run with 10 million credits', cost: 3, emoji: '🥈', type: 'start_credits', value: 10000000, requires: 'pup_start_cash' },
-  { id: 'pup_start_cash3', name: 'Golden Cradle', description: 'Begin each run with 10 billion credits', cost: 8, emoji: '🥇', type: 'start_credits', value: 10000000000, requires: 'pup_start_cash2' },
-  { id: 'pup_start_cash4', name: 'Cosmic Inheritance', description: 'Begin each run with 10 trillion credits', cost: 18, emoji: '💎', type: 'start_credits', value: 10000000000000, requires: 'pup_start_cash3' },
+  { id: 'pup_start_cash2', name: 'Silver Spoon', description: 'Begin each run with 10 million credits', cost: 10, emoji: '🥈', type: 'start_credits', value: 10000000, requires: 'pup_start_cash' },
+  { id: 'pup_start_cash3', name: 'Golden Cradle', description: 'Begin each run with 10 billion credits', cost: 200, emoji: '🥇', type: 'start_credits', value: 10000000000, requires: 'pup_start_cash2' },
+  { id: 'pup_start_cash4', name: 'Cosmic Inheritance', description: 'Begin each run with 10 trillion credits', cost: 25000, emoji: '💎', type: 'start_credits', value: 10000000000000, requires: 'pup_start_cash3' },
   // Offline earnings
-  { id: 'pup_offline', name: 'Dream Harvester', description: 'Offline earnings: 75%', cost: 2, emoji: '😴', type: 'offline_efficiency', value: 0.75 },
-  { id: 'pup_offline2', name: 'Lucid Operator', description: 'Offline earnings: 100%', cost: 5, emoji: '💤', type: 'offline_efficiency', value: 1.0, requires: 'pup_offline' },
-  { id: 'pup_offline3', name: 'Time Banker', description: 'Offline earnings: 150% (time debt!)', cost: 12, emoji: '⏰', type: 'offline_efficiency', value: 1.5, requires: 'pup_offline2' },
+  { id: 'pup_offline', name: 'Dream Harvester', description: 'Offline earnings: 75%', cost: 3, emoji: '😴', type: 'offline_efficiency', value: 0.75 },
+  { id: 'pup_offline2', name: 'Lucid Operator', description: 'Offline earnings: 100%', cost: 50, emoji: '💤', type: 'offline_efficiency', value: 1.0, requires: 'pup_offline' },
+  { id: 'pup_offline3', name: 'Time Banker', description: 'Offline earnings: 150% (time debt!)', cost: 10000, emoji: '⏰', type: 'offline_efficiency', value: 1.5, requires: 'pup_offline2' },
   // Income multipliers
   { id: 'pup_income1', name: 'Star Power', description: '+30% income per prestige star', cost: 2, emoji: '⭐', type: 'income_per_star', value: 0.3 },
-  { id: 'pup_income2', name: 'Nebula Surge', description: 'All income x1.5 permanently', cost: 3, emoji: '🌀', type: 'flat_income', value: 1.5 },
-  { id: 'pup_income3', name: 'Galactic Surge', description: 'All income x2 permanently', cost: 7, emoji: '⚡', type: 'flat_income', value: 2.0, requires: 'pup_income2' },
-  { id: 'pup_income4', name: 'Cosmic Surge', description: 'All income x3 permanently', cost: 15, emoji: '💥', type: 'flat_income', value: 3.0, requires: 'pup_income3' },
-  { id: 'pup_income5', name: 'Omnipotent Flow', description: 'All income x5 permanently', cost: 30, emoji: '♾️', type: 'flat_income', value: 5.0, requires: 'pup_income4' },
+  { id: 'pup_income2', name: 'Nebula Surge', description: 'All income x1.5 permanently', cost: 8, emoji: '🌀', type: 'flat_income', value: 1.5 },
+  { id: 'pup_income3', name: 'Galactic Surge', description: 'All income x2 permanently', cost: 80, emoji: '⚡', type: 'flat_income', value: 2.0, requires: 'pup_income2' },
+  { id: 'pup_income4', name: 'Cosmic Surge', description: 'All income x3 permanently', cost: 2000, emoji: '💥', type: 'flat_income', value: 3.0, requires: 'pup_income3' },
+  { id: 'pup_income5', name: 'Omnipotent Flow', description: 'All income x5 permanently', cost: 1000000, emoji: '♾️', type: 'flat_income', value: 5.0, requires: 'pup_income4' },
   // Click multipliers
   { id: 'pup_click', name: 'Precision Strike', description: 'Manual taps earn 3x', cost: 1, emoji: '👆', type: 'click_multiplier', value: 3 },
-  { id: 'pup_click2', name: 'Hyperfinger', description: 'Manual taps earn 8x', cost: 3, emoji: '🖐️', type: 'click_multiplier', value: 8, requires: 'pup_click' },
-  { id: 'pup_click3', name: 'Cyberhand', description: 'Manual taps earn 20x', cost: 8, emoji: '🦾', type: 'click_multiplier', value: 20, requires: 'pup_click2' },
+  { id: 'pup_click2', name: 'Hyperfinger', description: 'Manual taps earn 8x', cost: 15, emoji: '🖐️', type: 'click_multiplier', value: 8, requires: 'pup_click' },
+  { id: 'pup_click3', name: 'Cyberhand', description: 'Manual taps earn 20x', cost: 3000, emoji: '🦾', type: 'click_multiplier', value: 20, requires: 'pup_click2' },
   // Discounts
-  { id: 'pup_managers', name: 'Corporate Network', description: 'Managers cost 50% less', cost: 3, emoji: '📊', type: 'manager_discount', value: 0.5 },
-  { id: 'pup_upgrades', name: 'R&D Budget', description: 'Upgrades cost 50% less', cost: 3, emoji: '🔬', type: 'upgrade_discount', value: 0.5 },
-  { id: 'pup_gen_discount', name: 'Bulk Deal', description: 'Generators cost 20% less', cost: 4, emoji: '🏷️', type: 'generator_discount', value: 0.8 },
-  { id: 'pup_gen_discount2', name: 'Supply Chain Master', description: 'Generators cost 35% less', cost: 10, emoji: '📦', type: 'generator_discount', value: 0.65, requires: 'pup_gen_discount' },
+  { id: 'pup_managers', name: 'Corporate Network', description: 'Managers cost 50% less', cost: 5, emoji: '📊', type: 'manager_discount', value: 0.5 },
+  { id: 'pup_upgrades', name: 'R&D Budget', description: 'Upgrades cost 50% less', cost: 5, emoji: '🔬', type: 'upgrade_discount', value: 0.5 },
+  { id: 'pup_gen_discount', name: 'Bulk Deal', description: 'Generators cost 20% less', cost: 15, emoji: '🏷️', type: 'generator_discount', value: 0.8 },
+  { id: 'pup_gen_discount2', name: 'Supply Chain Master', description: 'Generators cost 35% less', cost: 5000, emoji: '📦', type: 'generator_discount', value: 0.65, requires: 'pup_gen_discount' },
   // Speed upgrades
   { id: 'pup_time1', name: 'Overclock', description: 'All generators run 1.5x faster', cost: 4, emoji: '⏩', type: 'speed_multiplier', value: 1.5 },
-  { id: 'pup_time2', name: 'Quantum Speed', description: 'All generators run 2x faster', cost: 9, emoji: '💨', type: 'speed_multiplier', value: 2.0, requires: 'pup_time1' },
-  { id: 'pup_time3', name: 'Temporal Rush', description: 'All generators run 3x faster', cost: 20, emoji: '🚀', type: 'speed_multiplier', value: 3.0, requires: 'pup_time2' },
+  { id: 'pup_time2', name: 'Quantum Speed', description: 'All generators run 2x faster', cost: 100, emoji: '💨', type: 'speed_multiplier', value: 2.0, requires: 'pup_time1' },
+  { id: 'pup_time3', name: 'Temporal Rush', description: 'All generators run 3x faster', cost: 50000, emoji: '🚀', type: 'speed_multiplier', value: 3.0, requires: 'pup_time2' },
   // Free generators
   { id: 'pup_free_gen', name: 'Inheritance', description: 'Start with 1 free Asteroid Mine', cost: 1, emoji: '🎁', type: 'free_generator', value: 1 },
-  { id: 'pup_free_gen2', name: 'Estate', description: 'Start with 5 free Asteroid Mines', cost: 3, emoji: '🏠', type: 'free_generator', value: 5, requires: 'pup_free_gen' },
+  { id: 'pup_free_gen2', name: 'Estate', description: 'Start with 5 free Asteroid Mines', cost: 8, emoji: '🏠', type: 'free_generator', value: 5, requires: 'pup_free_gen' },
   // Prestige stars bonus
-  { id: 'pup_star_boost', name: 'Stellar Ambition', description: 'Earn 25% more prestige stars on rebirth', cost: 5, emoji: '🌟', type: 'star_bonus', value: 0.25 },
-  { id: 'pup_star_boost2', name: 'Star Magnate', description: 'Earn 50% more prestige stars on rebirth', cost: 12, emoji: '✨', type: 'star_bonus', value: 0.5, requires: 'pup_star_boost' },
+  { id: 'pup_star_boost', name: 'Stellar Ambition', description: 'Earn 25% more prestige stars on rebirth', cost: 20, emoji: '🌟', type: 'star_bonus', value: 0.25 },
+  { id: 'pup_star_boost2', name: 'Star Magnate', description: 'Earn 50% more prestige stars on rebirth', cost: 100000, emoji: '✨', type: 'star_bonus', value: 0.5, requires: 'pup_star_boost' },
   // Global passive bonus
-  { id: 'pup_auto_start', name: 'Autopilot', description: 'All owned managers activate immediately on rebirth', cost: 6, emoji: '🤖', type: 'auto_start', value: 1 },
+  { id: 'pup_auto_start', name: 'Autopilot', description: 'All owned managers activate immediately on rebirth', cost: 10, emoji: '🤖', type: 'auto_start', value: 1 },
 ];
 
 export const MILESTONES = [
