@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, AlertTriangle, Shield, Trophy, Clock, Copy, Play, X, CheckCircle2 } from 'lucide-react';
+import { Zap, AlertTriangle, Shield, Trophy, Clock, Copy, Play, X, ShoppingBag } from 'lucide-react';
 import { formatNumber } from '@/lib/gameData';
 import { generateRift } from '@/lib/riftData';
+import RiftTokenStore from './RiftTokenStore';
 
 function ModifierBadge({ mod }) {
   const isDebuff = mod.side === 'debuff';
@@ -32,10 +33,10 @@ function RiftTimer({ endTime }) {
   return <span className="font-display text-lg font-black text-accent tabular-nums">{String(mins).padStart(2,'0')}:{String(secs).padStart(2,'0')}</span>;
 }
 
-export default function VoidRiftPanel({ state, activeRift, onStartRift, onAbandonRift, riftTokens }) {
+export default function VoidRiftPanel({ state, activeRift, onStartRift, onAbandonRift, riftTokens, ownedRiftUpgrades, onBuyRiftUpgrade }) {
   const [selectedLevel, setSelectedLevel] = useState(1);
   const [copied, setCopied] = useState(false);
-  const [justCompleted, setJustCompleted] = useState(false);
+  const [activeTab, setActiveTab] = useState('rifts');
 
   const totalPrestiges = state.totalPrestiges || 0;
   const maxLevel = Math.max(1, Math.floor(totalPrestiges / 5) - 9); // 1 at 50, 2 at 55, etc.
@@ -56,6 +57,26 @@ export default function VoidRiftPanel({ state, activeRift, onStartRift, onAbando
 
   return (
     <div className="px-4 pb-4 space-y-4">
+      {/* Tabs */}
+      <div className="flex gap-2">
+        {[['rifts', '⚡ RIFTS'], ['store', '🛒 TOKEN STORE']].map(([tab, label]) => (
+          <button key={tab} onClick={() => setActiveTab(tab)}
+            className={`flex-1 py-2 rounded-xl font-display text-[10px] font-black tracking-widest border transition-all
+              ${ activeTab === tab ? 'bg-secondary/20 border-secondary/50 text-secondary' : 'bg-muted/20 border-border/20 text-muted-foreground'}`}>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === 'store' && (
+        <RiftTokenStore
+          riftTokens={riftTokens}
+          ownedRiftUpgrades={ownedRiftUpgrades || []}
+          onBuy={onBuyRiftUpgrade}
+        />
+      )}
+
+      {activeTab === 'rifts' && <>
       {/* Header */}
       <div className="rounded-2xl overflow-hidden border border-secondary/30" style={{ background: 'hsl(230 20% 9%)' }}>
         <div className="px-4 py-2 flex items-center justify-between border-b border-border/20">
@@ -205,12 +226,7 @@ export default function VoidRiftPanel({ state, activeRift, onStartRift, onAbando
         </>
       )}
 
-      {/* Token upgrades teaser */}
-      <div className="rounded-2xl border border-border/20 bg-muted/10 p-4 text-center">
-        <Trophy className="w-6 h-6 text-accent mx-auto mb-2" />
-        <p className="font-display text-[10px] font-bold tracking-widest text-muted-foreground">RIFT TOKEN STORE</p>
-        <p className="font-body text-xs text-muted-foreground mt-1">Spend tokens on exclusive cosmetics and permanent bonuses. Coming soon.</p>
-      </div>
+      </>}
     </div>
   );
 }

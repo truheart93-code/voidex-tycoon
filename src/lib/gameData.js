@@ -580,7 +580,12 @@ export function getPrestigeStars(totalEarned) {
   return Math.floor(Math.sqrt(totalEarned / 10000000));
 }
 
-export function getPrestigeMultiplier(stars, prestigeUpgrades = []) {
+export function getGalaxyMultiplier(galaxyCount = 0) {
+  const mults = [1, 2, 4, 8];
+  return mults[Math.min(galaxyCount, mults.length - 1)];
+}
+
+export function getPrestigeMultiplier(stars, prestigeUpgrades = [], galaxyCount = 0) {
   let base = 1 + stars * 0.1;
 
   const perStarUpg = PRESTIGE_UPGRADES.filter(u => u.type === 'income_per_star' && prestigeUpgrades.includes(u.id));
@@ -592,6 +597,8 @@ export function getPrestigeMultiplier(stars, prestigeUpgrades = []) {
   for (const u of flatUpg) {
     base *= u.value;
   }
+
+  base *= getGalaxyMultiplier(galaxyCount);
 
   return base;
 }
@@ -637,7 +644,7 @@ export function getGeneratorCostMultiplier(prestigeUpgrades = []) {
   return 1;
 }
 
-export function createInitialState(prestigeUpgrades = []) {
+export function createInitialState(prestigeUpgrades = [], galaxyCount = 0) {
   const startCredits = getStartCredits(prestigeUpgrades);
   const freeGenCount = prestigeUpgrades.includes('pup_free_gen2') ? 5 : prestigeUpgrades.includes('pup_free_gen') ? 1 : 0;
   return {
@@ -651,6 +658,7 @@ export function createInitialState(prestigeUpgrades = []) {
     prestigeStars: 0,
     totalPrestiges: 0,
     prestigeUpgrades: [],
+    galaxyCount: galaxyCount,
     lastSaveTime: Date.now(),
     buyAmount: 1,
   };

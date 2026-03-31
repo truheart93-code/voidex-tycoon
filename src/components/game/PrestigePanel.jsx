@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Star, RotateCcw, Zap, Lock, Check } from 'lucide-react';
 import { useState } from 'react';
 import PrestigeSkillTree from './PrestigeSkillTree';
+import GalaxyAscension from './GalaxyAscension';
 
 function PrestigeUpgradeCard({ upg, owned, canAfford, onBuy, locked }) {
   return (
@@ -48,7 +49,7 @@ function PrestigeUpgradeCard({ upg, owned, canAfford, onBuy, locked }) {
   );
 }
 
-export default function PrestigePanel({ state, onPrestige, onBuyPrestigeUpgrade }) {
+export default function PrestigePanel({ state, onPrestige, onBuyPrestigeUpgrade, onAscendGalaxy }) {
   const [confirming, setConfirming] = useState(false);
   const [activeSection, setActiveSection] = useState('rebirth');
 
@@ -72,17 +73,17 @@ export default function PrestigePanel({ state, onPrestige, onBuyPrestigeUpgrade 
   return (
     <div className="px-4 pb-4">
       {/* Section tabs */}
-      <div className="flex gap-2 mb-4">
-        {['rebirth', 'upgrades'].map(s => (
+      <div className="flex gap-1 mb-4 overflow-x-auto pb-1">
+        {[['rebirth', '♻️ REBIRTH'], ['upgrades', '⭐ SKILLS'], ['galaxy', '🌌 GALAXY']].map(([s, label]) => (
           <button
             key={s}
             onClick={() => setActiveSection(s)}
-            className={`flex-1 py-2 rounded-xl font-display text-xs font-bold tracking-wide transition-all
+            className={`flex-shrink-0 px-3 py-2 rounded-xl font-display text-[10px] font-bold tracking-wide transition-all
               ${activeSection === s
                 ? 'bg-secondary text-secondary-foreground shadow-md'
                 : 'bg-muted text-muted-foreground'}`}
           >
-            {s === 'rebirth' ? '♻️ REBIRTH' : '⭐ STAR SHOP'}
+            {label}
           </button>
         ))}
       </div>
@@ -156,7 +157,7 @@ export default function PrestigePanel({ state, onPrestige, onBuyPrestigeUpgrade 
         <div>
           <div className="flex items-center justify-between mb-3 px-1">
             <div>
-              <p className="font-body text-xs text-muted-foreground">Tap a node to unlock — hover for details</p>
+              <p className="font-body text-xs text-muted-foreground">Tap an upgrade to expand, then buy</p>
             </div>
             <div className="flex items-center gap-1 bg-secondary/20 rounded-full px-2 py-1">
               <Star className="w-3 h-3 text-secondary fill-secondary" />
@@ -176,6 +177,10 @@ export default function PrestigePanel({ state, onPrestige, onBuyPrestigeUpgrade 
             />
           )}
         </div>
+      )}
+
+      {activeSection === 'galaxy' && (
+        <GalaxyAscension state={state} onAscend={onAscendGalaxy} />
       )}
     </div>
   );

@@ -63,9 +63,12 @@ export default function Game() {
     applyGalaxyCredits,
     triggerBuff,
     riftTokens,
+    ownedRiftUpgrades,
+    buyRiftUpgrade,
     activeRift,
     startRift,
     abandonRift,
+    ascendGalaxy,
   } = useGameState();
 
   const [activeTab, setActiveTab] = useState('generators');
@@ -193,7 +196,7 @@ export default function Game() {
         )}
 
         {activeTab === 'prestige' && (
-          <PrestigePanel state={state} onPrestige={prestige} onBuyPrestigeUpgrade={buyPrestigeUpgrade} />
+          <PrestigePanel state={state} onPrestige={prestige} onBuyPrestigeUpgrade={buyPrestigeUpgrade} onAscendGalaxy={ascendGalaxy} />
         )}
 
         {activeTab === 'rifts' && (
@@ -203,6 +206,8 @@ export default function Game() {
             onStartRift={startRift}
             onAbandonRift={abandonRift}
             riftTokens={riftTokens}
+            ownedRiftUpgrades={ownedRiftUpgrades}
+            onBuyRiftUpgrade={buyRiftUpgrade}
           />
         )}
 

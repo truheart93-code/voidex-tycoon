@@ -7,6 +7,8 @@ import {
 } from './gameData';
 import { generateDailyQuests, getDailySeedKey, generateWeeklyQuests, getWeeklySeedKey, BUFFS } from './questData';
 import { generateRift, saveActiveRift } from './riftData';
+import { RIFT_TOKEN_UPGRADES } from '../components/game/RiftTokenStore';
+import { GALAXY_MULTIPLIERS } from '../components/game/GalaxyAscension';
 import { playBuySound, playCollectSound, playUpgradeSound, playAchievementSound, playPrestigeSound } from './audioEngine';
 
 const SAVE_KEY = 'stellar_empire_save';
@@ -14,6 +16,14 @@ const TICK_RATE = 50; // ms
 const QUEST_KEY = 'stellar_quest_save';
 const WEEKLY_QUEST_KEY = 'stellar_weekly_quest_save';
 const RIFT_TOKENS_KEY = 'voidex_rift_tokens';
+const RIFT_UPGRADES_KEY = 'voidex_rift_upgrades';
+
+function loadRiftUpgrades() {
+  try { return JSON.parse(localStorage.getItem(RIFT_UPGRADES_KEY) || '[]'); } catch(e) { return []; }
+}
+function saveRiftUpgrades(arr) {
+  try { localStorage.setItem(RIFT_UPGRADES_KEY, JSON.stringify(arr)); } catch(e) {} 
+}
 
 function loadRiftTokens() {
   try { return parseInt(localStorage.getItem(RIFT_TOKENS_KEY) || '0', 10); } catch(e) { return 0; }
@@ -91,7 +101,7 @@ export default function useGameState() {
     const elapsed = now - (loaded.lastSaveTime || now);
     if (elapsed > 5000) { // 5 seconds minimum
     let offlineEarnings = 0;
-    const prestigeMult = getPrestigeMultiplier(loaded.prestigeStars || 0, loaded.prestigeUpgrades || []);
+    const prestigeMult = getPrestigeMultiplier(loaded.prestigeStars || 0, loaded.prestigeUpgrades || [], loaded.galaxyCount || 0);
       let globalMult = 1;
       (loaded.upgrades || []).forEach(uid => {
         const upg = UPGRADES.find(u => u.id === uid);
@@ -129,6 +139,7 @@ export default function useGameState() {
   const [quests, setQuests] = useState(() => loadQuests(state.prestigeStars));
   const [weeklyQuests, setWeeklyQuests] = useState(() => loadWeeklyQuests(state.prestigeStars));
   const [riftTokens, setRiftTokens] = useState(() => loadRiftTokens());
+  const [ownedRiftUpgrades, setOwnedRiftUpgrades] = useState(() => loadRiftUpgrades());
   const [activeRift, setActiveRift] = useState(null);
   const [activeBuffs, setActiveBuffs] = useState([]);
   const tapCountRef = useRef(0);
@@ -166,7 +177,7 @@ export default function useGameState() {
         let newTotalEarned = prev.totalEarned;
         let newLifetime = prev.lifetimeEarned;
         const newGenerators = { ...prev.generators };
-        const prestigeMult = getPrestigeMultiplier(prev.prestigeStars, prev.prestigeUpgrades || []);
+        const prestigeMult = getPrestigeMultiplier(prev.prestigeStars, prev.prestigeUpgrades || [], prev.galaxyCount || 0);
         let globalMult = 1;
         prev.upgrades.forEach(uid => {
           const upg = UPGRADES.find(u => u.id === uid);
@@ -320,7 +331,7 @@ export default function useGameState() {
 
       const time = getTime(gen, genState, prev.prestigeUpgrades || []);
       if (genState.progress >= time) {
-        const prestigeMult = getPrestigeMultiplier(prev.prestigeStars, prev.prestigeUpgrades || []);
+        const prestigeMult = getPrestigeMultiplier(prev.prestigeStars, prev.prestigeUpgrades || [], prev.galaxyCount || 0);
         let globalMult = 1;
         prev.upgrades.forEach(uid => {
           const upg = UPGRADES.find(u => u.id === uid);
@@ -404,7 +415,7 @@ export default function useGameState() {
 
       playPrestigeSound();
       const prestigeUpgrades = prev.prestigeUpgrades || [];
-      const fresh = createInitialState(prestigeUpgrades);
+      const fresh = createInitialState(prestigeUpgrades, prev.galaxyCount || 0);
       return {
         ...fresh,
         prestigeStars: stars,
@@ -412,6 +423,7 @@ export default function useGameState() {
         lifetimeEarned: prev.lifetimeEarned,
         achievements: prev.achievements,
         prestigeUpgrades,
+        galaxyCount: prev.galaxyCount || 0,
         lastSaveTime: Date.now(),
       };
     });
@@ -479,6 +491,43 @@ export default function useGameState() {
     setActiveBuffs(prev => [...prev, buff]);
   }, []);
 
+  const buyRiftUpgrade = useCallback((upgradeId) => {
+    const upg = RIFT_TOKEN_UPGRADES.find(u => u.id === upgradeId);
+    if (!upg) return;
+    setOwnedRiftUpgrades(prev => {
+      if (prev.includes(upgradeId)) return prev;
+      const parentOwned = !upg.requires || prev.includes(upg.requires);
+      if (!parentOwned) return prev;
+      setRiftTokens(t => {
+        if (t < upg.cost) return t;
+        const next = t - upg.cost;
+        saveRiftTokens(next);
+        return next;
+      });
+      const next = [...prev, upgradeId];
+      saveRiftUpgrades(next);
+      return next;
+    });
+  }, []);
+
+  const ascendGalaxy = useCallback(() => {
+    setState(prev => {
+      const galaxyCount = (prev.galaxyCount || 0);
+      const thresholds = [100, 250, 500];
+      if (galaxyCount >= thresholds.length) return prev;
+      if (prev.prestigeStars < thresholds[galaxyCount]) return prev;
+      playPrestigeSound();
+      const fresh = createInitialState([]);
+      return {
+        ...fresh,
+        galaxyCount: galaxyCount + 1,
+        lifetimeEarned: prev.lifetimeEarned,
+        achievements: prev.achievements,
+        lastSaveTime: Date.now(),
+      };
+    });
+  }, []);
+
   const resetGame = useCallback(() => {
     localStorage.removeItem(SAVE_KEY);
     setState(createInitialState());
@@ -526,8 +575,11 @@ export default function useGameState() {
     applyGalaxyCredits,
     triggerBuff,
     riftTokens,
+    ownedRiftUpgrades,
+    buyRiftUpgrade,
     activeRift,
     startRift,
     abandonRift,
+    ascendGalaxy,
   };
 }
