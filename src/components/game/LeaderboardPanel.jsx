@@ -8,7 +8,7 @@ const BLOCKED_WORDS = [
   'fuck','shit','ass','bitch','cunt','dick','pussy','cock','nigger','nigga',
   'faggot','fag','retard','whore','slut','bastard','damn','hell','piss','crap',
   'twat','wanker','bollocks','asshole','arsehole','motherfucker','idiot','moron',
-  'queer','dyke','tranny','trannies','shemale','ladyboy','homo','lesbo','trannie',
+  'dyke','tranny','trannies','shemale','ladyboy','homo','lesbo','trannie',
   'spic','chink','gook','kike','wetback','beaner','towelhead','sandnigger','cracker',
   'nazi','nonce','pedo','pedophile','rape','rapist','racist','kkk','hitler',
 ];

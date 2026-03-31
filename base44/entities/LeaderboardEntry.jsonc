@@ -5,16 +5,16 @@
     "player_name": {
       "type": "string"
     },
-    "credits": {
+    "lifetime_earned": {
       "type": "number"
     },
     "prestige_stars": {
       "type": "number"
     },
-    "total_generators": {
+    "total_prestiges": {
       "type": "number"
     },
-    "achievements": {
+    "total_generators": {
       "type": "number"
     },
     "player_id": {
@@ -22,7 +22,6 @@
     }
   },
   "required": [
-    "player_name",
-    "credits"
+    "player_name"
   ]
 }

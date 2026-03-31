@@ -43,7 +43,7 @@ const TUTORIAL_STEPS = [
     title: 'Collect Your Credits',
     text: 'When the bar fills and the card glows gold, tap it to collect your earnings!',
     arrowDir: 'down',
-    check: (state, baseline) => state.totalEarned > baseline,
+    check: (state, baseline) => (state.lifetimeEarned || 0) > baseline,
   },
   {
     id: 'buy_more',
@@ -64,7 +64,8 @@ export default function IntroModal({ state, blocked = false }) {
 
   useEffect(() => {
     const seen = localStorage.getItem(INTRO_KEY);
-    if (!seen) setVisible(true);
+    const hasEmpire = state && Object.values(state.generators || {}).some(g => g?.count > 0);
+    if (!seen && !hasEmpire) setVisible(true);
   }, []);
 
   useEffect(() => {
