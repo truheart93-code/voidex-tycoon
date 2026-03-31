@@ -76,6 +76,10 @@ const TUTORIAL_STEPS = [
 ];
 
 export default function IntroModal({ state, activeTab, blocked = false, onTabChange, onHighlightTab }) {
+  const [phase, setPhase] = useState('story');
+  const [slide, setSlide] = useState(0);
+  const [tutStep, setTutStep] = useState(0);
+  const [visible, setVisible] = useState(false);
   const baselineEarned = useRef(0);
   const tabSwitched = useRef(false);
 
