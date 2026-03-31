@@ -24,6 +24,8 @@ import ThemeSelector from '@/components/game/ThemeSelector';
 import AnalyticsPanel from '@/components/game/AnalyticsPanel';
 import { THEMES, loadTheme, saveTheme, applyTheme } from '@/lib/themes';
 import IntroModal from '@/components/game/IntroModal';
+import SpaceHeistEvent from '@/components/game/SpaceHeistEvent';
+import RebirthTutorial from '@/components/game/RebirthTutorial';
 import SettingsModal from '@/components/game/SettingsModal';
 import DailyRewardModal from '@/components/game/DailyRewardModal';
 import { checkDailyReward } from '@/lib/dailyReward';
@@ -265,7 +267,9 @@ export default function Game() {
         />
       )}
 
-      <IntroModal state={state} blocked={showDailyReward && !showOffline} />
+      <IntroModal state={state} blocked={showDailyReward && !showOffline} onTabChange={setActiveTab} />
+      <SpaceHeistEvent state={state} onPenalty={(amount) => applyGalaxyCredits(amount)} />
+      <RebirthTutorial state={state} onNavigatePrestige={() => setActiveTab('prestige')} />
 
       {showSettings && (
         <SettingsModal
