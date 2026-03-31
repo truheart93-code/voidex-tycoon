@@ -75,6 +75,7 @@ export default function Game() {
   } = useGameState();
 
   const [activeTab, setActiveTab] = useState('generators');
+  const [highlightTab, setHighlightTab] = useState(null);
   const [musicOn, setMusicOn] = useState(false);
   const [showOffline, setShowOffline] = useState(!!state.offlineEarnings);
   const [offlineAmount] = useState(state.offlineEarnings || 0);
@@ -238,6 +239,7 @@ export default function Game() {
         onTabChange={setActiveTab}
         questAlert={quests?.some(q => !q.claimed && q.progress >= q.target)}
         totalPrestiges={state.totalPrestiges || 0}
+        highlightTabId={highlightTab}
         readyCount={Object.entries(state.generators).filter(([id, gs]) => {
           const gen = GENERATORS.find(g => g.id === id);
           if (!gen || !gs || gs.count === 0) return false;
@@ -267,7 +269,7 @@ export default function Game() {
         />
       )}
 
-      <IntroModal state={state} blocked={showDailyReward && !showOffline} onTabChange={setActiveTab} />
+      <IntroModal state={state} activeTab={activeTab} blocked={showDailyReward && !showOffline} onTabChange={setActiveTab} onHighlightTab={setHighlightTab} />
       <GlobalEvents state={state} onAddCredits={(amount) => applyGalaxyCredits(amount)} />
       <RebirthTutorial state={state} onNavigatePrestige={() => setActiveTab('prestige')} />
 

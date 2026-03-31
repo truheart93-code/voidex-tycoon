@@ -59,29 +59,23 @@ const TUTORIAL_STEPS = [
     id: 'crew_intro',
     icon: '👥',
     title: 'Meet Your Crew',
-    text: 'Nice work, boss. But tapping forever sounds exhausting. Head to the CREW tab — you can hire managers to run generators automatically while you sip space-coffee.',
+    text: 'Nice work, boss. Tapping forever sounds exhausting. Tap the glowing CREW button below — you can hire managers to run generators automatically.',
     arrowDir: 'none',
-    tab: 'managers',
-    switchTabTo: 'managers',
-    check: (state) => state.managers && state.managers.length > 0,
+    highlightTab: 'managers',
+    check: (state, baseline, activeTab) => activeTab === 'managers',
   },
   {
     id: 'tech_intro',
     icon: '🔬',
     title: 'Upgrade Time',
-    text: 'Managers hired? Beautiful. Now check the TECH tab — upgrades multiply your generator output. Doubling, tripling, sometimes 10x. Mathematically irresponsible. Financially brilliant.',
+    text: 'Nice! Now tap the glowing TECH button — upgrades multiply your generator output. Doubling, tripling, sometimes 10x. Mathematically irresponsible. Financially brilliant.',
     arrowDir: 'none',
-    tab: 'upgrades',
-    switchTabTo: 'upgrades',
-    autoAdvance: 5000,
+    highlightTab: 'upgrades',
+    check: (state, baseline, activeTab) => activeTab === 'upgrades',
   },
 ];
 
-export default function IntroModal({ state, blocked = false, onTabChange }) {
-  const [phase, setPhase] = useState('story');
-  const [slide, setSlide] = useState(0);
-  const [tutStep, setTutStep] = useState(0);
-  const [visible, setVisible] = useState(false);
+export default function IntroModal({ state, activeTab, blocked = false, onTabChange, onHighlightTab }) {
   const baselineEarned = useRef(0);
   const tabSwitched = useRef(false);
 
@@ -91,28 +85,35 @@ export default function IntroModal({ state, blocked = false, onTabChange }) {
     if (!seen && !hasEmpire) setVisible(true);
   }, []);
 
-  // Switch tab when tutorial step requires it
+  // Notify parent which tab to highlight
   useEffect(() => {
-    if (phase !== 'tutorial' || !visible) return;
-    const step = TUTORIAL_STEPS[tutStep];
-    if (step?.switchTabTo && !tabSwitched.current) {
-      tabSwitched.current = true;
-      onTabChange?.(step.switchTabTo);
+    if (phase !== 'tutorial' || !visible) {
+      onHighlightTab?.(null);
+      return;
     }
+    const step = TUTORIAL_STEPS[tutStep];
+    onHighlightTab?.(step?.highlightTab || null);
   }, [tutStep, phase, visible]);
 
   // Check predicates
   useEffect(() => {
     if (phase !== 'tutorial' || !visible) return;
     const step = TUTORIAL_STEPS[tutStep];
-    if (!step || step.autoAdvance || !step.check) return;
-    if (step.check(state, baselineEarned.current)) {
+    if (!step || !step.check) return;
+    if (step.check(state, baselineEarned.current, activeTab)) {
       setTimeout(() => {
         tabSwitched.current = false;
-        setTutStep(s => s + 1);
+        setTutStep(s => {
+          const next = s + 1;
+          if (next >= TUTORIAL_STEPS.length) {
+            localStorage.setItem(INTRO_KEY, '1');
+            setVisible(false);
+          }
+          return next;
+        });
       }, 500);
     }
-  }, [state, phase, tutStep, visible]);
+  }, [state, activeTab, phase, tutStep, visible]);
 
   // Auto-advance steps
   useEffect(() => {

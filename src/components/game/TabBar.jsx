@@ -16,7 +16,7 @@ const MORE_TABS = [
   { id: 'achievements', label: 'Awards', icon: Trophy },
 ];
 
-export default function TabBar({ activeTab, onTabChange, questAlert, totalPrestiges = 0, readyCount = 0 }) {
+export default function TabBar({ activeTab, onTabChange, questAlert, totalPrestiges = 0, readyCount = 0, highlightTabId = null }) {
   const [showMore, setShowMore] = useState(false);
 
   const handleTabChange = (id) => {
@@ -82,6 +82,7 @@ export default function TabBar({ activeTab, onTabChange, questAlert, totalPresti
                 label={tab.label}
                 icon={tab.icon}
                 isActive={activeTab === tab.id}
+                highlight={highlightTabId === tab.id}
                 onClick={() => { setShowMore(false); onTabChange(tab.id); }}
               />
             </div>
@@ -125,6 +126,7 @@ export default function TabBar({ activeTab, onTabChange, questAlert, totalPresti
               label="Quests"
               icon={CalendarDays}
               isActive={activeTab === 'quests'}
+              highlight={highlightTabId === 'quests'}
               onClick={() => { setShowMore(false); onTabChange('quests'); }}
               alert={questAlert}
             />
@@ -151,13 +153,20 @@ export default function TabBar({ activeTab, onTabChange, questAlert, totalPresti
   );
 }
 
-function NavTab({ label, icon: Icon, isActive, onClick, alert }) {
+function NavTab({ label, icon: Icon, isActive, onClick, alert, highlight }) {
   return (
     <button
       onClick={onClick}
       className={`relative flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all active:scale-95
-        ${isActive ? 'text-primary' : 'text-muted-foreground/70'}`}
+        ${highlight ? 'text-accent' : isActive ? 'text-primary' : 'text-muted-foreground/70'}`}
     >
+      {highlight && (
+        <motion.span
+          className="absolute inset-0 rounded-xl border-2 border-accent"
+          animate={{ opacity: [0.4, 1, 0.4], scale: [0.92, 1.04, 0.92] }}
+          transition={{ duration: 1.1, repeat: Infinity, ease: 'easeInOut' }}
+        />
+      )}
       <div className="relative">
         <Icon className={`w-[18px] h-[18px] transition-transform duration-150 ${isActive ? 'scale-110' : ''}`} />
         {alert && !isActive && (
