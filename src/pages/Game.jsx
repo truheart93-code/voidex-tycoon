@@ -262,8 +262,8 @@ export default function Game() {
         />
       )}
 
-      <IntroModal state={state} blocked={showDailyReward} />
-      {showDailyReward && (
+      <IntroModal state={state} blocked={showDailyReward && !showOffline} />
+      {showDailyReward && !showOffline && (
         <DailyRewardModal
           dailyData={dailyData}
           onClaim={handleDailyRewardClaim}
