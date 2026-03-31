@@ -24,6 +24,7 @@ import ThemeSelector from '@/components/game/ThemeSelector';
 import AnalyticsPanel from '@/components/game/AnalyticsPanel';
 import { THEMES, loadTheme, saveTheme, applyTheme } from '@/lib/themes';
 import IntroModal from '@/components/game/IntroModal';
+import SettingsModal from '@/components/game/SettingsModal';
 import DailyRewardModal from '@/components/game/DailyRewardModal';
 import { checkDailyReward } from '@/lib/dailyReward';
 import GalaxyEvents from '@/components/game/GalaxyEvents';
@@ -77,6 +78,7 @@ export default function Game() {
   const [offlineAmount] = useState(state.offlineEarnings || 0);
   const [offlineSeconds] = useState(state.offlineSeconds || 0);
   const [showThemes, setShowThemes] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [currentTheme, setCurrentTheme] = useState(() => loadTheme());
 
   // Daily reward
@@ -166,6 +168,7 @@ export default function Game() {
         isMusicOn={musicOn}
         onToggleMusic={handleToggleMusic}
         onOpenThemes={() => setShowThemes(true)}
+        onOpenSettings={() => setShowSettings(true)}
       />
 
       <NewsTicker state={state} />
@@ -263,6 +266,16 @@ export default function Game() {
       )}
 
       <IntroModal state={state} blocked={showDailyReward && !showOffline} />
+
+      {showSettings && (
+        <SettingsModal
+          onClose={() => setShowSettings(false)}
+          isMusicOn={musicOn}
+          onToggleMusic={handleToggleMusic}
+          onOpenThemes={() => setShowThemes(true)}
+          onResetGame={resetGame}
+        />
+      )}
       {showDailyReward && !showOffline && (
         <DailyRewardModal
           dailyData={dailyData}
