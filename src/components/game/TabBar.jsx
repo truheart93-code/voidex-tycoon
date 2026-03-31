@@ -41,7 +41,7 @@ export default function TabBar({ activeTab, onTabChange, questAlert, totalPresti
             className="absolute bottom-[68px] left-0 right-0 z-40 mx-3 mb-1"
           >
             <div className="bg-card/98 backdrop-blur-xl border border-primary/20 rounded-2xl p-3 shadow-2xl shadow-black/50">
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 {visibleMore.map(tab => {
                   const Icon = tab.icon;
                   const isActive = activeTab === tab.id;
@@ -49,11 +49,11 @@ export default function TabBar({ activeTab, onTabChange, questAlert, totalPresti
                     <button
                       key={tab.id}
                       onClick={() => handleTabChange(tab.id)}
-                      className={`flex flex-col items-center gap-1.5 py-3 px-1 rounded-xl transition-all
+                      className={`flex items-center gap-2.5 py-3 px-4 rounded-xl transition-all
                         ${isActive ? 'bg-primary/20 text-primary ring-1 ring-primary/40' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}
                     >
-                      <Icon className="w-4 h-4" />
-                      <span className="font-body text-[9px] font-bold tracking-wide whitespace-nowrap">{tab.label}</span>
+                      <Icon className="w-4 h-4 flex-shrink-0" />
+                      <span className="font-body text-[11px] font-bold tracking-wide">{tab.label}</span>
                     </button>
                   );
                 })}
