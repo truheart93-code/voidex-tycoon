@@ -114,7 +114,7 @@ export default function IntroModal({ state, blocked = false }) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[60] flex items-end justify-center pb-40 px-4"
+        className={`fixed inset-0 z-[60] flex px-4 ${phase === 'tutorial' ? 'items-start pt-20' : 'items-end pb-40'} justify-center`}
         style={phase === 'tutorial' ? { pointerEvents: 'none' } : { background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.55) 100%)', backdropFilter: 'blur(2px)' }}
       >
         {/* Stars */}
@@ -185,14 +185,14 @@ export default function IntroModal({ state, blocked = false }) {
                 ))}
               </div>
 
-              {/* Bouncing arrow pointing up at game */}
+              {/* Bouncing arrow pointing down at game */}
               {TUTORIAL_STEPS[tutStep].arrowDir === 'down' && (
                 <motion.div
-                  animate={{ y: [0, -8, 0] }}
+                  animate={{ y: [0, 8, 0] }}
                   transition={{ duration: 0.9, repeat: Infinity }}
-                  className="text-center text-3xl mb-1 select-none"
+                  className="text-center text-2xl mt-2 select-none"
                 >
-                  👆
+                  👇
                 </motion.div>
               )}
 
