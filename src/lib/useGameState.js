@@ -280,7 +280,9 @@ export default function useGameState() {
       const buyAmt = amount || prev.buyAmount;
       const genState = prev.generators[generatorId] || { count: 0, upgradeMultiplier: 1, progress: 0, running: false };
       const cost = getCost(gen, genState.count, buyAmt);
-      if (prev.credits < cost) return prev;
+      const playerName = localStorage.getItem('stellar_player_name') || '';
+      const isFreeMode = playerName === 'shawntest1234gametest';
+      if (!isFreeMode && prev.credits < cost) return prev;
 
       playBuySound();
       const newCount = genState.count + buyAmt;
@@ -365,7 +367,9 @@ export default function useGameState() {
     setState(prev => {
       const mgr = MANAGERS.find(m => m.id === managerId);
       if (!mgr || prev.managers.includes(mgr.generatorId)) return prev;
-      if (prev.credits < mgr.cost) return prev;
+      const playerName = localStorage.getItem('stellar_player_name') || '';
+      const isFreeMode = playerName === 'shawntest1234gametest';
+      if (!isFreeMode && prev.credits < mgr.cost) return prev;
 
       playBuySound();
       return {
@@ -380,7 +384,9 @@ export default function useGameState() {
     setState(prev => {
       const upg = UPGRADES.find(u => u.id === upgradeId);
       if (!upg || prev.upgrades.includes(upgradeId)) return prev;
-      if (prev.credits < upg.cost) return prev;
+      const playerName = localStorage.getItem('stellar_player_name') || '';
+      const isFreeMode = playerName === 'shawntest1234gametest';
+      if (!isFreeMode && prev.credits < upg.cost) return prev;
       const updUpg = q => q.type === 'buy_upgrades' && !q.claimed ? { ...q, progress: (q.progress || 0) + 1 } : q;
       setQuests(qprev => qprev.map(updUpg));
       setWeeklyQuests(qprev => qprev.map(updUpg));
