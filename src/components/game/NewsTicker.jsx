@@ -102,7 +102,7 @@ export default function NewsTicker({ state }) {
         setIndex(i => (i + 1) % allNews.length);
         setVisible(true);
       }, 400);
-    }, 6000);
+    }, 14000);
     return () => clearInterval(cycle);
   }, [allNews.length]);
 
