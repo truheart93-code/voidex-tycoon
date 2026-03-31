@@ -77,3 +77,47 @@ export function generateDailyQuests(prestigeStars = 0) {
 export function getDailySeedKey() {
   return getDailySeed();
 }
+
+export function getWeeklySeedKey() {
+  const d = new Date();
+  const startOfYear = new Date(d.getFullYear(), 0, 1);
+  const week = Math.ceil(((d - startOfYear) / 86400000 + startOfYear.getDay() + 1) / 7);
+  return `week_${d.getFullYear()}_${week}`;
+}
+
+export function generateWeeklyQuests(prestigeStars = 0) {
+  const seed = getWeeklySeedKey();
+  const rng = seededRandom(seed);
+  const scale = Math.max(1, 1 + prestigeStars * 0.8);
+
+  const weeklyTargets = {
+    earn_credits: [500000, 5000000, 100000000, 2000000000, 50000000000],
+    buy_generators: [50, 150, 500, 1000, 2000],
+    tap_generators: [100, 300, 1000, 3000, 10000],
+    reach_milestone: [50, 100, 200, 400, 500],
+    buy_upgrades: [5, 10, 20, 35, 50],
+  };
+
+  const shuffled = [...QUEST_TEMPLATES].sort(() => rng() - 0.5);
+
+  return shuffled.slice(0, 3).map((tmpl, i) => {
+    const pool = weeklyTargets[tmpl.type];
+    const tierIdx = Math.min(Math.floor(rng() * pool.length), pool.length - 1);
+    const rawTarget = pool[tierIdx];
+    const target = tmpl.type === 'earn_credits' ? Math.floor(rawTarget * scale) : rawTarget;
+    return {
+      id: `${seed}_${i}`,
+      type: tmpl.type,
+      name: tmpl.name,
+      emoji: tmpl.emoji,
+      description: tmpl.description.replace('{target}', target.toLocaleString()),
+      target,
+      reward: 'rift_tokens',
+      rewardLabel: '10 Rift Tokens',
+      rewardTokens: 10 + i * 5,
+      progress: 0,
+      claimed: false,
+      isWeekly: true,
+    };
+  });
+}

@@ -5,12 +5,40 @@ import {
   getOfflineEfficiency, getStartCredits, getClickMultiplier,
   createInitialState
 } from './gameData';
-import { generateDailyQuests, getDailySeedKey, BUFFS } from './questData';
+import { generateDailyQuests, getDailySeedKey, generateWeeklyQuests, getWeeklySeedKey, BUFFS } from './questData';
+import { generateRift, saveActiveRift } from './riftData';
 import { playBuySound, playCollectSound, playUpgradeSound, playAchievementSound, playPrestigeSound } from './audioEngine';
 
 const SAVE_KEY = 'stellar_empire_save';
 const TICK_RATE = 50; // ms
 const QUEST_KEY = 'stellar_quest_save';
+const WEEKLY_QUEST_KEY = 'stellar_weekly_quest_save';
+const RIFT_TOKENS_KEY = 'voidex_rift_tokens';
+
+function loadRiftTokens() {
+  try { return parseInt(localStorage.getItem(RIFT_TOKENS_KEY) || '0', 10); } catch(e) { return 0; }
+}
+
+function saveRiftTokens(n) {
+  try { localStorage.setItem(RIFT_TOKENS_KEY, String(n)); } catch(e) {}
+}
+
+function loadWeeklyQuests(prestigeStars) {
+  try {
+    const saved = localStorage.getItem(WEEKLY_QUEST_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed.seed === getWeeklySeedKey()) return parsed.quests;
+    }
+  } catch(e) {}
+  return generateWeeklyQuests(prestigeStars);
+}
+
+function saveWeeklyQuests(quests) {
+  try {
+    localStorage.setItem(WEEKLY_QUEST_KEY, JSON.stringify({ seed: getWeeklySeedKey(), quests }));
+  } catch(e) {}
+}
 
 function loadQuests(prestigeStars) {
   try {
@@ -99,6 +127,9 @@ export default function useGameState() {
   stateRef.current = state;
   const [newAchievements, setNewAchievements] = useState([]);
   const [quests, setQuests] = useState(() => loadQuests(state.prestigeStars));
+  const [weeklyQuests, setWeeklyQuests] = useState(() => loadWeeklyQuests(state.prestigeStars));
+  const [riftTokens, setRiftTokens] = useState(() => loadRiftTokens());
+  const [activeRift, setActiveRift] = useState(null);
   const [activeBuffs, setActiveBuffs] = useState([]);
   const tapCountRef = useRef(0);
 
@@ -112,6 +143,7 @@ export default function useGameState() {
 
   // Save quests whenever they change
   useEffect(() => { saveQuests(quests); }, [quests]);
+  useEffect(() => { saveWeeklyQuests(weeklyQuests); }, [weeklyQuests]);
 
   // Auto-save every 10 seconds
   useEffect(() => {
@@ -206,6 +238,25 @@ export default function useGameState() {
     setNewAchievements(prev => prev.slice(1));
   }, []);
 
+  const startRift = useCallback((level) => {
+    const rift = generateRift(level);
+    const active = { ...rift, startTime: Date.now(), earnedCredits: 0, failed: false };
+    setActiveRift(active);
+    saveActiveRift(active);
+  }, []);
+
+  const abandonRift = useCallback(() => {
+    setActiveRift(prev => {
+      if (!prev) return null;
+      const complete = prev.earnedCredits >= prev.creditGoal;
+      if (complete) {
+        setRiftTokens(t => { saveRiftTokens(t + prev.tokenReward); return t + prev.tokenReward; });
+      }
+      saveActiveRift(null);
+      return null;
+    });
+  }, []);
+
   const buyGenerator = useCallback((generatorId, amount = null) => {
     setState(prev => {
       const gen = GENERATORS.find(g => g.id === generatorId);
@@ -218,13 +269,15 @@ export default function useGameState() {
       playBuySound();
       const newCount = genState.count + buyAmt;
       // Update buy_generators quest
-      setQuests(qprev => qprev.map(q =>
+      const updGen = (qprev) => qprev.map(q =>
         q.type === 'buy_generators' && !q.claimed
           ? { ...q, progress: (q.progress || 0) + buyAmt }
           : q.type === 'reach_milestone' && !q.claimed && newCount >= q.target
             ? { ...q, progress: q.target }
             : q
-      ));
+      );
+      setQuests(updGen);
+      setWeeklyQuests(updGen);
       return {
         ...prev,
         credits: prev.credits - cost,
@@ -242,11 +295,13 @@ export default function useGameState() {
   const collectGenerator = useCallback((generatorId) => {
     tapCountRef.current += 1;
     // Update tap quest progress
-    setQuests(prev => prev.map(q =>
+    const tapUpdater = (prev) => prev.map(q =>
       q.type === 'tap_generators' && !q.claimed
         ? { ...q, progress: (q.progress || 0) + 1 }
         : q
-    ));
+    );
+    setQuests(tapUpdater);
+    setWeeklyQuests(tapUpdater);
 
     setState(prev => {
       const gen = GENERATORS.find(g => g.id === generatorId);
@@ -310,11 +365,9 @@ export default function useGameState() {
       const upg = UPGRADES.find(u => u.id === upgradeId);
       if (!upg || prev.upgrades.includes(upgradeId)) return prev;
       if (prev.credits < upg.cost) return prev;
-      setQuests(qprev => qprev.map(q =>
-        q.type === 'buy_upgrades' && !q.claimed
-          ? { ...q, progress: (q.progress || 0) + 1 }
-          : q
-      ));
+      const updUpg = q => q.type === 'buy_upgrades' && !q.claimed ? { ...q, progress: (q.progress || 0) + 1 } : q;
+      setQuests(qprev => qprev.map(updUpg));
+      setWeeklyQuests(qprev => qprev.map(updUpg));
 
       // Check required count
       if (upg.generatorId !== 'all') {
@@ -364,24 +417,25 @@ export default function useGameState() {
     });
   }, []);
 
-  const claimQuest = useCallback((questId) => {
-    setQuests(prev => prev.map(q => {
+  const claimQuest = useCallback((questId, isWeekly = false) => {
+    const setter = isWeekly ? setWeeklyQuests : setQuests;
+    setter(prev => prev.map(q => {
       if (q.id !== questId || q.claimed || q.progress < q.target) return q;
-      // Activate buff or give credits
-      const buffDef = BUFFS.find(b => b.id === q.reward);
-      if (buffDef) {
-        setActiveBuffs(bprev => [...bprev, {
-          id: buffDef.id,
-          instanceId: Date.now(),
-          expiresAt: Date.now() + buffDef.duration,
-        }]);
-      } else if (q.reward === 'credits_bonus') {
-        setState(sprev => ({
-          ...sprev,
-          credits: sprev.credits + Math.floor(sprev.totalEarned * 0.01 + 1000),
-          totalEarned: sprev.totalEarned + Math.floor(sprev.totalEarned * 0.01 + 1000),
-          lifetimeEarned: sprev.lifetimeEarned + Math.floor(sprev.totalEarned * 0.01 + 1000),
-        }));
+      if (q.reward === 'rift_tokens') {
+        const earned = q.rewardTokens || 10;
+        setRiftTokens(t => { saveRiftTokens(t + earned); return t + earned; });
+      } else {
+        const buffDef = BUFFS.find(b => b.id === q.reward);
+        if (buffDef) {
+          setActiveBuffs(bprev => [...bprev, { id: buffDef.id, instanceId: Date.now(), expiresAt: Date.now() + buffDef.duration }]);
+        } else if (q.reward === 'credits_bonus') {
+          setState(sprev => ({
+            ...sprev,
+            credits: sprev.credits + Math.floor(sprev.totalEarned * 0.01 + 1000),
+            totalEarned: sprev.totalEarned + Math.floor(sprev.totalEarned * 0.01 + 1000),
+            lifetimeEarned: sprev.lifetimeEarned + Math.floor(sprev.totalEarned * 0.01 + 1000),
+          }));
+        }
       }
       return { ...q, claimed: true };
     }));
@@ -440,9 +494,18 @@ export default function useGameState() {
           ? { ...q, progress: Math.min((q.progress || 0) + diff, q.target) }
           : q
       ));
+      setWeeklyQuests(prev => prev.map(q =>
+        q.type === 'earn_credits' && !q.claimed
+          ? { ...q, progress: Math.min((q.progress || 0) + diff, q.target) }
+          : q
+      ));
+      // Track rift earnings
+      if (activeRift && !activeRift.failed) {
+        setActiveRift(r => r ? { ...r, earnedCredits: (r.earnedCredits || 0) + diff } : r);
+      }
     }
     lastEarned.current = state.totalEarned;
-  }, [state.totalEarned]);
+  }, [state.totalEarned, activeRift]);
 
   return {
     state,
@@ -457,9 +520,14 @@ export default function useGameState() {
     newAchievements,
     dismissAchievement,
     quests,
+    weeklyQuests,
     activeBuffs,
     claimQuest,
     applyGalaxyCredits,
     triggerBuff,
+    riftTokens,
+    activeRift,
+    startRift,
+    abandonRift,
   };
 }

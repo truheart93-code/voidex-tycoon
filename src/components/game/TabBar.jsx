@@ -1,4 +1,4 @@
-import { Pickaxe, Users, ArrowUp, Star, Trophy, CalendarDays, Medal, BarChart2 } from 'lucide-react';
+import { Pickaxe, Users, ArrowUp, Star, Trophy, CalendarDays, Medal, BarChart2, Zap } from 'lucide-react';
 
 const TABS = [
   { id: 'generators', label: 'Empire', icon: Pickaxe },
@@ -7,11 +7,12 @@ const TABS = [
   { id: 'prestige', label: 'Rebirth', icon: Star },
   { id: 'quests', label: 'Quests', icon: CalendarDays },
   { id: 'analytics', label: 'Charts', icon: BarChart2 },
+  { id: 'rifts', label: 'Rifts', icon: Zap, minPrestiges: 50 },
   { id: 'leaderboard', label: 'Ranks', icon: Medal },
   { id: 'achievements', label: 'Awards', icon: Trophy },
 ];
 
-export default function TabBar({ activeTab, onTabChange, questAlert }) {
+export default function TabBar({ activeTab, onTabChange, questAlert, totalPrestiges = 0 }) {
   return (
     <div className="flex-shrink-0 z-30 bg-background/95 backdrop-blur-xl border-t border-border/50 safe-bottom">
       <div className="flex items-center py-1 overflow-x-auto scrollbar-none" style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
@@ -19,6 +20,8 @@ export default function TabBar({ activeTab, onTabChange, questAlert }) {
         {TABS.map(tab => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
+          const isLocked = tab.minPrestiges && totalPrestiges < tab.minPrestiges;
+          if (isLocked) return null;
           const showAlert = tab.id === 'quests' && questAlert;
           return (
             <button

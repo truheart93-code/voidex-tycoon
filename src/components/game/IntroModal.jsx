@@ -69,7 +69,7 @@ const TUTORIAL_STEPS = [
   },
 ];
 
-export default function IntroModal({ state }) {
+export default function IntroModal({ state, blocked = false }) {
   const [phase, setPhase] = useState('story'); // 'story' | 'tutorial' | 'done'
   const [slide, setSlide] = useState(0);
   const [tutStep, setTutStep] = useState(0);
@@ -119,7 +119,7 @@ export default function IntroModal({ state }) {
     setVisible(false);
   };
 
-  if (!visible) return null;
+  if (!visible || blocked) return null;
 
   return (
     <AnimatePresence>

@@ -22,7 +22,8 @@ function MissionStatus({ isComplete, isClaimed }) {
   );
 }
 
-export default function DailyQuests({ quests, onClaim, activeBuffs }) {
+export default function DailyQuests({ quests, weeklyQuests, onClaim, activeBuffs }) {
+  const [activeTab, setActiveTab] = useState('daily');
   const [tick, setTick] = useState(0);
 
   // Tick to update countdown timers
@@ -40,18 +41,29 @@ export default function DailyQuests({ quests, onClaim, activeBuffs }) {
   const mm = String(Math.floor((secsToReset % 3600) / 60)).padStart(2, '0');
   const ss = String(secsToReset % 60).padStart(2, '0');
 
-  if (!quests || quests.length === 0) return (
+  const displayQuests = activeTab === 'daily' ? quests : (weeklyQuests || []);
+  if (!displayQuests || displayQuests.length === 0) return (
     <div className="flex flex-col items-center justify-center py-16">
       <div className="text-3xl mb-3 opacity-40">📡</div>
       <p className="font-display text-xs text-muted-foreground tracking-widest">CONNECTING TO MISSION CONTROL...</p>
     </div>
   );
 
-  const completed = quests.filter(q => q.claimed).length;
-  const claimable = quests.filter(q => !q.claimed && (q.progress || 0) >= q.target).length;
+  const completed = displayQuests.filter(q => q.claimed).length;
+  const claimable = displayQuests.filter(q => !q.claimed && (q.progress || 0) >= q.target).length;
 
   return (
     <div className="px-4 pb-4 space-y-4">
+      {/* Tab Switcher */}
+      <div className="flex gap-2">
+        {['daily','weekly'].map(tab => (
+          <button key={tab} onClick={() => setActiveTab(tab)}
+            className={`flex-1 py-2 rounded-xl font-display text-[10px] font-black tracking-widest border transition-all
+              ${activeTab === tab ? 'bg-primary/20 border-primary/50 text-primary' : 'bg-muted/20 border-border/20 text-muted-foreground'}`}>
+            {tab === 'daily' ? '⚡ DAILY' : '📅 WEEKLY'}
+          </button>
+        ))}
+      </div>
 
       {/* Terminal Header */}
       <div className="rounded-2xl overflow-hidden border border-primary/20" style={{ background: 'hsl(230 20% 9%)' }}>
@@ -72,14 +84,14 @@ export default function DailyQuests({ quests, onClaim, activeBuffs }) {
 
         <div className="px-4 py-3 flex items-center justify-between">
           <div>
-            <p className="font-display text-xs font-black tracking-widest text-foreground">DAILY MISSIONS</p>
+            <p className="font-display text-xs font-black tracking-widest text-foreground">{activeTab === 'daily' ? 'DAILY MISSIONS' : 'WEEKLY MISSIONS'}</p>
             <p className="font-body text-[10px] text-muted-foreground mt-0.5">
               {completed}/{quests.length} missions completed
               {claimable > 0 && <span className="text-accent ml-2">• {claimable} ready to claim</span>}
             </p>
           </div>
           <div className="flex gap-1">
-            {quests.map((_, i) => (
+            {displayQuests.map((_, i) => (
               <div
                 key={i}
                 className={`w-5 h-1.5 rounded-full transition-all ${
@@ -128,7 +140,7 @@ export default function DailyQuests({ quests, onClaim, activeBuffs }) {
       )}
 
       {/* Mission Cards */}
-      {quests.map((quest, idx) => {
+      {displayQuests.map((quest, idx) => {
         const progress = Math.min(quest.progress || 0, quest.target);
         const pct = Math.min((progress / quest.target) * 100, 100);
         const isComplete = progress >= quest.target;
@@ -212,7 +224,7 @@ export default function DailyQuests({ quests, onClaim, activeBuffs }) {
                 {isComplete && !isClaimed && (
                   <motion.button
                     whileTap={{ scale: 0.94 }}
-                    onClick={() => onClaim(quest.id)}
+                    onClick={() => onClaim(quest.id, activeTab === 'weekly')}
                     className="px-4 py-1.5 rounded-xl font-display text-[10px] font-black tracking-widest shadow-lg shadow-accent/30 active:scale-95 transition-all"
                     style={{ background: 'linear-gradient(135deg, hsl(45 90% 55%), hsl(45 80% 45%))', color: 'hsl(230 25% 7%)' }}
                   >
@@ -232,7 +244,7 @@ export default function DailyQuests({ quests, onClaim, activeBuffs }) {
         );
       })}
 
-      {completed === quests.length && (
+      {completed === displayQuests.length && displayQuests.length > 0 && (
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}

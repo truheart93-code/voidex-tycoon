@@ -27,6 +27,7 @@ import IntroModal from '@/components/game/IntroModal';
 import DailyRewardModal from '@/components/game/DailyRewardModal';
 import { checkDailyReward } from '@/lib/dailyReward';
 import GalaxyEvents from '@/components/game/GalaxyEvents';
+import VoidRiftPanel from '@/components/game/VoidRiftPanel';
 
 // Generator accent colors for particles
 const GEN_COLORS = {
@@ -56,10 +57,15 @@ export default function Game() {
     newAchievements,
     dismissAchievement,
     quests,
+    weeklyQuests,
     activeBuffs,
     claimQuest,
     applyGalaxyCredits,
     triggerBuff,
+    riftTokens,
+    activeRift,
+    startRift,
+    abandonRift,
   } = useGameState();
 
   const [activeTab, setActiveTab] = useState('generators');
@@ -190,8 +196,18 @@ export default function Game() {
           <PrestigePanel state={state} onPrestige={prestige} onBuyPrestigeUpgrade={buyPrestigeUpgrade} />
         )}
 
+        {activeTab === 'rifts' && (
+          <VoidRiftPanel
+            state={state}
+            activeRift={activeRift}
+            onStartRift={startRift}
+            onAbandonRift={abandonRift}
+            riftTokens={riftTokens}
+          />
+        )}
+
         {activeTab === 'quests' && (
-          <DailyQuests quests={quests} onClaim={claimQuest} activeBuffs={activeBuffs} />
+          <DailyQuests quests={quests} weeklyQuests={weeklyQuests} onClaim={claimQuest} activeBuffs={activeBuffs} />
         )}
 
         {activeTab === 'analytics' && (
@@ -211,6 +227,7 @@ export default function Game() {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         questAlert={quests?.some(q => !q.claimed && q.progress >= q.target)}
+        totalPrestiges={state.totalPrestiges || 0}
       />
 
       <AchievementToast
@@ -234,7 +251,7 @@ export default function Game() {
         />
       )}
 
-      <IntroModal state={state} />
+      <IntroModal state={state} blocked={showDailyReward} />
       {showDailyReward && (
         <DailyRewardModal
           dailyData={dailyData}
