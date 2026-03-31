@@ -27,13 +27,15 @@ export default function TabBar({ activeTab, onTabChange, questAlert, totalPresti
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className={`relative flex flex-col items-center gap-0.5 px-2.5 py-1.5 rounded-lg transition-all flex-shrink-0
-                ${isActive ? 'text-primary' : 'text-muted-foreground'}`}
+              className={`relative flex flex-col items-center gap-0.5 py-1.5 rounded-lg transition-all flex-shrink-0
+                ${isActive ? 'text-primary px-3' : 'text-muted-foreground px-2'}`}
             >
-              <Icon className={`w-4 h-4 transition-transform ${isActive ? 'scale-110' : ''}`} />
-              <span className="font-body text-[9px] font-bold tracking-wide whitespace-nowrap">
-                {tab.label}
-              </span>
+              <Icon className={`transition-transform ${isActive ? 'w-4 h-4 scale-110' : 'w-4 h-4'}`} />
+              {isActive && (
+                <span className="font-body text-[9px] font-bold tracking-wide whitespace-nowrap">
+                  {tab.label}
+                </span>
+              )}
               {isActive && <div className="w-1 h-1 rounded-full bg-primary" />}
               {showAlert && (
                 <span className="absolute top-0.5 right-0.5 w-2 h-2 rounded-full bg-accent animate-pulse" />
