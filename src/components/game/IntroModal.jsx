@@ -114,8 +114,11 @@ export default function IntroModal({ state, blocked = false }) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className={`fixed inset-0 z-[60] flex px-4 ${phase === 'tutorial' ? 'items-start pt-20' : 'items-end pb-40'} justify-center`}
-        style={phase === 'tutorial' ? { pointerEvents: 'none' } : { background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.55) 100%)', backdropFilter: 'blur(2px)' }}
+        className="fixed inset-0 z-[60] flex px-4 justify-center"
+        style={phase === 'tutorial'
+          ? { pointerEvents: 'none', alignItems: 'flex-start', paddingTop: '80px' }
+          : { background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.55) 100%)', backdropFilter: 'blur(2px)', alignItems: 'flex-end', paddingBottom: '160px' }}
+
       >
         {/* Stars */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
