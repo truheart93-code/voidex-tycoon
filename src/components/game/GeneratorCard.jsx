@@ -12,12 +12,12 @@ function FloatingText({ value }) {
         <motion.div
           key={value.id}
           initial={{ opacity: 1, y: 0, scale: 1 }}
-          animate={{ opacity: 0, y: -60, scale: 1.3 }}
+          animate={{ opacity: 0, y: -80, scale: 1.5 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.9, ease: 'easeOut' }}
+          transition={{ duration: 1.0, ease: 'easeOut' }}
           className="absolute top-2 left-1/2 -translate-x-1/2 z-50 pointer-events-none"
         >
-          <span className="font-display text-sm font-black text-accent drop-shadow-lg whitespace-nowrap">
+          <span className="font-display text-base font-black text-accent drop-shadow-[0_0_8px_rgba(251,191,36,0.8)] whitespace-nowrap">
             +💎{formatNumber(value.amount)}
           </span>
         </motion.div>
@@ -73,12 +73,13 @@ function GeneratorCard({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
+      whileTap={isComplete ? { scale: 0.97 } : {}}
       onClick={handleCollect}
       className={`relative overflow-hidden rounded-xl border transition-all duration-200 cursor-pointer
         ${isComplete
-          ? 'border-accent/70 bg-gradient-to-r from-accent/8 to-transparent shadow-lg shadow-accent/20'
+          ? 'border-accent/80 bg-gradient-to-r from-accent/12 to-transparent shadow-xl shadow-accent/30'
           : isRunning
-            ? 'border-primary/30 bg-card/90'
+            ? 'border-primary/40 bg-card/90'
             : 'border-border/40 bg-card/70'
         }`}
     >
@@ -90,7 +91,7 @@ function GeneratorCard({
         <div className="absolute inset-0 z-0 pointer-events-none">
           <div
             className={`h-full transition-all ease-linear duration-75
-              ${isComplete ? 'bg-accent/15' : 'bg-primary/8'}`}
+              ${isComplete ? 'bg-accent/20' : 'bg-primary/10'}`}
             style={{ width: `${progressPercent}%` }}
           />
         </div>
@@ -100,10 +101,10 @@ function GeneratorCard({
       <AnimatePresence>
         {isComplete && (
           <motion.div
-            initial={{ opacity: 0.4 }}
-            animate={{ opacity: [0.4, 0.15, 0.4] }}
-            transition={{ duration: 1, repeat: Infinity }}
-            className="absolute inset-0 z-0 bg-accent/10 pointer-events-none"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 0.25, 0.08, 0.25] }}
+            transition={{ duration: 1.2, repeat: Infinity }}
+            className="absolute inset-0 z-0 bg-accent/20 pointer-events-none rounded-xl"
           />
         )}
       </AnimatePresence>
@@ -164,10 +165,10 @@ function GeneratorCard({
 
             {/* Progress bar */}
             {count > 0 && isRunning && (
-              <div className="mt-1.5 space-y-0.5">
-                <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+              <div className="mt-1.5">
+                <div className="h-2 rounded-full bg-muted overflow-hidden">
                   <motion.div
-                    className={`h-full rounded-full ${isComplete ? 'bg-accent' : 'bg-primary'}`}
+                    className={`h-full rounded-full ${isComplete ? 'bg-accent shadow-[0_0_6px_hsl(45_90%_55%/0.8)]' : 'bg-primary'}`}
                     style={{ width: `${progressPercent}%` }}
                     transition={{ duration: 0.075, ease: 'linear' }}
                   />
@@ -203,12 +204,13 @@ function GeneratorCard({
           </div>
 
           {/* Buy button */}
-          <button
+          <motion.button
             onClick={e => { e.stopPropagation(); onBuy(generator.id); }}
             disabled={!canAfford}
+            whileTap={canAfford ? { scale: 0.88 } : {}}
             className={`flex-shrink-0 px-3 py-2.5 rounded-xl font-body text-xs font-bold transition-all
               ${canAfford
-                ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25 active:scale-90'
+                ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/30 active:scale-90'
                 : 'bg-muted text-muted-foreground opacity-40'
               }`}
           >
@@ -218,7 +220,7 @@ function GeneratorCard({
                 💎{formatNumber(cost)}
               </div>
             </div>
-          </button>
+          </motion.button>
         </div>
       </div>
     </motion.div>

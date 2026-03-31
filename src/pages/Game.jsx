@@ -233,6 +233,12 @@ export default function Game() {
         onTabChange={setActiveTab}
         questAlert={quests?.some(q => !q.claimed && q.progress >= q.target)}
         totalPrestiges={state.totalPrestiges || 0}
+        readyCount={Object.entries(state.generators).filter(([id, gs]) => {
+          const gen = GENERATORS.find(g => g.id === id);
+          if (!gen || !gs || gs.count === 0) return false;
+          const time = getTime(gen, gs, state.prestigeUpgrades || []);
+          return gs.running && gs.progress >= time && !state.managers.includes(id);
+        }).length}
       />
 
       <AchievementToast
