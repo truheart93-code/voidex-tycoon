@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const INTRO_KEY = 'voidex_intro_seen';
 
-// Story slides (no em dashes)
 const STORY_SLIDES = [
   {
     icon: '📜',
@@ -21,78 +20,65 @@ const STORY_SLIDES = [
   },
 ];
 
-// Interactive tutorial steps
+// Each step checks current state directly (no prev/curr comparison)
 const TUTORIAL_STEPS = [
   {
     id: 'buy_first',
     icon: '🪨',
     title: 'Buy Your First Generator',
     text: 'Tap the BUY button on the Asteroid Mine to purchase your first generator. You have 25 credits -- more than enough!',
-    highlight: 'bottom',
     arrowDir: 'down',
-    check: (prev, curr) => {
-      const prevCount = Object.values(prev.generators).reduce((s, g) => s + (g?.count || 0), 0);
-      const currCount = Object.values(curr.generators).reduce((s, g) => s + (g?.count || 0), 0);
-      return currCount > prevCount;
-    },
+    check: (state) => Object.values(state.generators).some(g => g?.count > 0),
   },
   {
     id: 'tap_start',
     icon: '⚡',
     title: 'Start Production',
     text: 'Tap anywhere on the Asteroid Mine card to start production. Watch the progress bar fill up!',
-    highlight: 'bottom',
     arrowDir: 'down',
-    check: (prev, curr) => {
-      return Object.values(curr.generators).some(g => g?.running);
-    },
+    check: (state) => Object.values(state.generators).some(g => g?.running),
   },
   {
     id: 'collect',
     icon: '💎',
     title: 'Collect Your Credits',
     text: 'When the bar fills and the card glows gold, tap it to collect your earnings!',
-    highlight: 'bottom',
     arrowDir: 'down',
-    check: (prev, curr) => {
-      return curr.totalEarned > (prev.totalEarned || 0);
-    },
+    check: (state, baseline) => state.totalEarned > baseline,
   },
   {
     id: 'buy_more',
     icon: '🏗️',
     title: 'Expand Your Empire',
     text: 'Great! Keep buying generators to earn more credits. Buy a manager to automate production so you earn even while away.',
-    highlight: 'none',
     arrowDir: 'none',
-    autoAdvance: 3000,
+    autoAdvance: 3500,
   },
 ];
 
 export default function IntroModal({ state, blocked = false }) {
-  const [phase, setPhase] = useState('story'); // 'story' | 'tutorial' | 'done'
+  const [phase, setPhase] = useState('story');
   const [slide, setSlide] = useState(0);
   const [tutStep, setTutStep] = useState(0);
   const [visible, setVisible] = useState(false);
-  const prevStateRef = useRef(null);
+  const baselineEarned = useRef(0);
 
   useEffect(() => {
     const seen = localStorage.getItem(INTRO_KEY);
     if (!seen) setVisible(true);
   }, []);
 
-  // Watch state changes during tutorial to auto-advance steps
+  // Check tutorial step completion by inspecting current state directly
   useEffect(() => {
     if (phase !== 'tutorial' || !visible) return;
     const step = TUTORIAL_STEPS[tutStep];
-    if (!step || step.autoAdvance) return;
-    if (prevStateRef.current && state && step.check(prevStateRef.current, state)) {
+    if (!step || step.autoAdvance || !step.check) return;
+    if (step.check(state, baselineEarned.current)) {
       setTimeout(() => setTutStep(s => s + 1), 400);
     }
-    prevStateRef.current = state;
   }, [state, phase, tutStep, visible]);
 
-  // Auto-advance for last step
+  // Auto-advance last step
   useEffect(() => {
     if (phase !== 'tutorial') return;
     const step = TUTORIAL_STEPS[tutStep];
@@ -109,7 +95,8 @@ export default function IntroModal({ state, blocked = false }) {
     if (slide < STORY_SLIDES.length - 1) {
       setSlide(s => s + 1);
     } else {
-      prevStateRef.current = state;
+      // Capture current earned as baseline for the collect step
+      baselineEarned.current = state.totalEarned;
       setPhase('tutorial');
     }
   };
