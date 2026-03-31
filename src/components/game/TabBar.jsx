@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Pickaxe, ArrowUp, Star, CalendarDays, MoreHorizontal, Users, BarChart2, Zap, Medal, Trophy, X } from 'lucide-react';
+import { Pickaxe, ArrowUp, CalendarDays, MoreHorizontal, Users, BarChart2, Zap, Medal, Trophy, Star, X } from 'lucide-react';
+
+const PRIMARY_TABS = [
+  { id: 'upgrades', label: 'Tech', icon: ArrowUp },
+  { id: 'managers', label: 'Crew', icon: Users },
+];
 
 const MORE_TABS = [
   { id: 'prestige', label: 'Rebirth', icon: Star },
@@ -34,14 +39,14 @@ export default function TabBar({ activeTab, onTabChange, questAlert, totalPresti
       <AnimatePresence>
         {showMore && (
           <motion.div
-            initial={{ opacity: 0, y: 12, scale: 0.96 }}
+            initial={{ opacity: 0, y: 16, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 12, scale: 0.96 }}
-            transition={{ duration: 0.18 }}
-            className="absolute bottom-[68px] left-0 right-0 z-40 mx-3 mb-1"
+            exit={{ opacity: 0, y: 16, scale: 0.95 }}
+            transition={{ duration: 0.18, type: 'spring', stiffness: 320, damping: 26 }}
+            className="absolute bottom-[76px] left-0 right-0 z-40 mx-3 mb-1"
           >
-            <div className="bg-card/98 backdrop-blur-xl border border-primary/20 rounded-2xl p-3 shadow-2xl shadow-black/50">
-              <div className="grid grid-cols-2 gap-2">
+            <div className="bg-card/98 backdrop-blur-xl border border-border/40 rounded-2xl p-2.5 shadow-2xl shadow-black/60">
+              <div className="grid grid-cols-2 gap-1.5">
                 {visibleMore.map(tab => {
                   const Icon = tab.icon;
                   const isActive = activeTab === tab.id;
@@ -49,11 +54,13 @@ export default function TabBar({ activeTab, onTabChange, questAlert, totalPresti
                     <button
                       key={tab.id}
                       onClick={() => handleTabChange(tab.id)}
-                      className={`flex items-center gap-2.5 py-3 px-4 rounded-xl transition-all
-                        ${isActive ? 'bg-primary/20 text-primary ring-1 ring-primary/40' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}
+                      className={`flex items-center gap-2.5 py-2.5 px-3 rounded-xl transition-all active:scale-95
+                        ${isActive
+                          ? 'bg-primary/20 text-primary ring-1 ring-primary/30'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'}`}
                     >
                       <Icon className="w-4 h-4 flex-shrink-0" />
-                      <span className="font-body text-[11px] font-bold tracking-wide">{tab.label}</span>
+                      <span className="font-body text-xs font-semibold">{tab.label}</span>
                     </button>
                   );
                 })}
@@ -64,71 +71,78 @@ export default function TabBar({ activeTab, onTabChange, questAlert, totalPresti
       </AnimatePresence>
 
       {/* Tab Bar */}
-      <div className="flex-shrink-0 z-40 bg-background/95 backdrop-blur-xl border-t border-border/40 safe-bottom">
-        {/* 3-col grid for side tabs + More, Empire is absolutely centered above */}
-        <div className="relative flex items-end px-4 pb-2 pt-1">
-          {/* Left: Tech */}
-          <div className="flex-1 flex justify-center">
-            <SideTab id="upgrades" label="Tech" icon={ArrowUp} isActive={activeTab === 'upgrades'}
-              onClick={() => { setShowMore(false); onTabChange('upgrades'); }} />
-          </div>
+      <div className="flex-shrink-0 z-40 relative" style={{ background: 'hsl(230 22% 9% / 0.97)', backdropFilter: 'blur(20px)', borderTop: '1px solid hsl(230 15% 20% / 0.6)' }}>
+        <div className="flex items-end px-2 pb-safe" style={{ paddingBottom: 'max(10px, env(safe-area-inset-bottom))' }}>
 
-          {/* Center: Empire FAB (raised) */}
-          <div className="flex flex-col items-center" style={{ marginBottom: '2px' }}>
+          {/* Left tabs */}
+          {PRIMARY_TABS.map(tab => (
+            <div key={tab.id} className="flex-1 flex justify-center">
+              <NavTab
+                id={tab.id}
+                label={tab.label}
+                icon={tab.icon}
+                isActive={activeTab === tab.id}
+                onClick={() => { setShowMore(false); onTabChange(tab.id); }}
+              />
+            </div>
+          ))}
+
+          {/* Center: Empire FAB */}
+          <div className="flex flex-col items-center" style={{ marginTop: '-18px', marginBottom: '2px' }}>
             <motion.button
               onClick={() => { setShowMore(false); onTabChange('generators'); }}
-              whileTap={{ scale: 0.9 }}
-              className={`relative flex flex-col items-center justify-center w-16 h-16 rounded-full transition-all duration-200
-                ${isEmpireActive
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted/80 text-muted-foreground border border-border/60'
-                }`}
+              whileTap={{ scale: 0.88 }}
+              whileHover={{ scale: 1.04 }}
+              className="relative flex flex-col items-center justify-center w-[62px] h-[62px] rounded-full transition-colors duration-200"
               style={isEmpireActive ? {
-                boxShadow: '0 0 0 3px hsl(185 80% 55% / 0.2), 0 0 25px hsl(185 80% 55% / 0.5), 0 4px 20px rgba(0,0,0,0.4)',
-                marginTop: '-22px'
+                background: 'linear-gradient(145deg, hsl(185 80% 60%), hsl(185 70% 40%))',
+                boxShadow: '0 0 0 3px hsl(185 80% 55% / 0.25), 0 0 30px hsl(185 80% 55% / 0.55), 0 6px 24px rgba(0,0,0,0.5)',
               } : {
-                boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
-                marginTop: '-22px'
+                background: 'linear-gradient(145deg, hsl(230 20% 18%), hsl(230 20% 13%))',
+                boxShadow: '0 0 0 1px hsl(230 15% 25%), 0 6px 20px rgba(0,0,0,0.5)',
               }}
             >
-              <Pickaxe className={`w-6 h-6 ${isEmpireActive ? '' : ''}`} />
+              <Pickaxe className={`w-6 h-6 ${isEmpireActive ? 'text-background' : 'text-muted-foreground'}`} />
               {readyCount > 0 && !isEmpireActive && (
                 <motion.span
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full bg-accent text-accent-foreground text-[10px] font-display font-black flex items-center justify-center px-1 shadow-lg"
+                  className="absolute -top-1 -right-1 min-w-[20px] h-[20px] rounded-full bg-accent text-accent-foreground text-[10px] font-display font-black flex items-center justify-center px-1 shadow-lg"
                 >
                   {readyCount}
                 </motion.span>
               )}
             </motion.button>
-            <span className={`font-display text-[9px] font-black tracking-widest mt-1.5 ${isEmpireActive ? 'text-primary' : 'text-muted-foreground'}`}>
+            <span className={`font-display text-[8px] font-black tracking-widest mt-1.5 ${isEmpireActive ? 'text-primary' : 'text-muted-foreground/60'}`}>
               EMPIRE
             </span>
           </div>
 
-          {/* Right: Crew */}
+          {/* Right: Quests */}
           <div className="flex-1 flex justify-center">
-            <SideTab id="managers" label="Crew" icon={Users} isActive={activeTab === 'managers'}
-              onClick={() => { setShowMore(false); onTabChange('managers'); }} />
+            <NavTab
+              id="quests"
+              label="Quests"
+              icon={CalendarDays}
+              isActive={activeTab === 'quests'}
+              onClick={() => { setShowMore(false); onTabChange('quests'); }}
+              alert={questAlert}
+            />
           </div>
 
           {/* Far right: More */}
           <div className="flex-1 flex justify-center">
             <button
               onClick={() => setShowMore(v => !v)}
-              className={`relative flex flex-col items-center gap-0.5 py-1.5 px-3 rounded-xl transition-all
-                ${showMore || isMoreActive ? 'text-primary' : 'text-muted-foreground'}`}
+              className={`relative flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all active:scale-95
+                ${showMore || isMoreActive ? 'text-primary' : 'text-muted-foreground/70'}`}
             >
-              <motion.div animate={{ rotate: showMore ? 90 : 0 }} transition={{ duration: 0.2 }}>
-                {showMore ? <X className="w-4 h-4" /> : <MoreHorizontal className="w-4 h-4" />}
+              <motion.div animate={{ rotate: showMore ? 45 : 0 }} transition={{ duration: 0.18 }}>
+                {showMore ? <X className="w-[18px] h-[18px]" /> : <MoreHorizontal className="w-[18px] h-[18px]" />}
               </motion.div>
-              <span className={`font-body text-[9px] font-bold tracking-wide ${showMore || isMoreActive ? 'text-primary' : ''}`}>
+              <span className="font-body text-[9px] font-bold tracking-wide">
                 {isMoreActive ? visibleMore.find(t => t.id === activeTab)?.label : 'More'}
               </span>
-              {(questAlert && !isMoreActive) && (
-                <span className="absolute top-0.5 right-1.5 w-2 h-2 rounded-full bg-accent animate-pulse" />
-              )}
             </button>
           </div>
         </div>
@@ -137,18 +151,26 @@ export default function TabBar({ activeTab, onTabChange, questAlert, totalPresti
   );
 }
 
-function SideTab({ id, label, icon: Icon, isActive, onClick }) {
+function NavTab({ label, icon: Icon, isActive, onClick, alert }) {
   return (
     <button
       onClick={onClick}
-      className={`flex flex-col items-center gap-0.5 py-1.5 px-3 rounded-xl transition-all
-        ${isActive ? 'text-primary' : 'text-muted-foreground'}`}
+      className={`relative flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all active:scale-95
+        ${isActive ? 'text-primary' : 'text-muted-foreground/70'}`}
     >
-      <Icon className={`w-4 h-4 transition-transform ${isActive ? 'scale-110' : ''}`} />
-      <span className={`font-body text-[9px] font-bold tracking-wide whitespace-nowrap ${isActive ? '' : 'opacity-70'}`}>
-        {isActive ? label : label}
-      </span>
-      {isActive && <div className="w-1 h-1 rounded-full bg-primary" />}
+      <div className="relative">
+        <Icon className={`w-[18px] h-[18px] transition-transform duration-150 ${isActive ? 'scale-110' : ''}`} />
+        {alert && !isActive && (
+          <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-accent animate-pulse" />
+        )}
+      </div>
+      <span className="font-body text-[9px] font-bold tracking-wide whitespace-nowrap">{label}</span>
+      {isActive && (
+        <motion.div
+          layoutId="tab-indicator"
+          className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full bg-primary"
+        />
+      )}
     </button>
   );
 }
