@@ -8,10 +8,9 @@ export default function SettingsModal({ onClose, isMusicOn, onToggleMusic, onOpe
   const [confirmReset, setConfirmReset] = useState(false);
 
   const handleFullReset = () => {
-    // Clear intro so it shows again
     localStorage.removeItem(INTRO_KEY);
     onResetGame();
-    onClose();
+    window.location.reload();
   };
 
   return (
