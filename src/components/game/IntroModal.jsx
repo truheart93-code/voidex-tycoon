@@ -115,7 +115,7 @@ export default function IntroModal({ state, blocked = false }) {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-[60] flex items-end justify-center pb-40 px-4"
-        style={{ background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.55) 100%)', backdropFilter: 'blur(2px)' }}
+        style={phase === 'tutorial' ? { pointerEvents: 'none' } : { background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.55) 100%)', backdropFilter: 'blur(2px)' }}
       >
         {/* Stars */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -128,7 +128,7 @@ export default function IntroModal({ state, blocked = false }) {
           ))}
         </div>
 
-        <div className="relative w-full max-w-sm pointer-events-auto">
+        <div className="relative w-full max-w-sm pointer-events-auto" style={{ pointerEvents: 'auto' }}>
           {phase === 'story' && (
             <>
               <div className="flex justify-center gap-2 mb-3">
