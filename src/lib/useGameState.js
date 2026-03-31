@@ -162,11 +162,16 @@ export default function useGameState() {
     return () => clearInterval(interval);
   }, []);
 
-  // Save on unload
+  // Save on unload or visibility change (minimized/tab switch)
   useEffect(() => {
     const handleUnload = () => saveGame(stateRef.current);
+    const handleVisibility = () => { if (document.hidden) saveGame(stateRef.current); };
     window.addEventListener('beforeunload', handleUnload);
-    return () => window.removeEventListener('beforeunload', handleUnload);
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => {
+      window.removeEventListener('beforeunload', handleUnload);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, []);
 
   // Game tick - auto collect for managed generators
